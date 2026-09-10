@@ -1,0 +1,907 @@
+[24bcs170@mepcolinux ex4a]$cat head.h
+#include<iostream>
+#include<string>
+using namespace std;
+
+class CMovie
+{
+    friend class CAQueue;
+    public:
+        ~CMovie();
+        CMovie();
+        CMovie(string,string,int,int);
+        void displaydetails();
+        void get();
+    private:
+        string title;
+        string name;
+        int age;
+        int price;
+};
+
+class CAQueue
+{
+    public:
+        CAQueue(int);
+        int enqueue(CMovie);
+        int dequeue();
+        int peekfront();
+        int peekrear();
+        int makelistempty();
+        void display();
+        int isfull();
+        int isempty();
+        int size();
+
+    private:
+        int rear,front;
+        int cap;
+        CMovie* queuearray;
+};
+[24bcs170@mepcolinux ex4a]$cat imp.cpp
+#include "head.h"
+
+CMovie::CMovie()
+{
+    title = "";
+    name = "";
+    age=0;
+    price = 0;
+}
+CMovie::CMovie(string t, string n, int a, int p)
+{
+    title=t;
+    name=n;
+    age=a;
+    price=p;
+}
+void CMovie::displaydetails()
+{
+    cout<<"TITLE\t\tNAME\t\tAGE\t\tPRICE\n";
+    cout<<title<<"\t\t"<<name<<"\t\t"<<age<<"\t\t"<<price<<endl;
+}
+CMovie::~CMovie()
+{
+    title="";
+    name="";
+    age=0;
+    price=0;
+}
+void CMovie::get()
+{
+    cout << "Enter Title: ";
+    cin >> title;
+    cout << "Enter Name: ";
+    cin >> name;
+    cout << "Enter age: ";
+    cin >> age;
+    cout << "Enter Price: ";
+    cin >> price;
+}
+
+CAQueue::CAQueue(int capacity)
+{
+    cap = capacity;
+    queuearray = new CMovie[capacity];
+    rear=front = -1;
+}
+
+int CAQueue::isfull()
+{
+    if((rear+1)%cap==front)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+int CAQueue::isempty()
+{
+    if(rear==-1&&front==-1)
+       return 1;
+    else
+       return 0;
+}
+
+int CAQueue::peekrear()
+{
+    if(isempty())
+        return -1;
+    else {
+        queuearray[rear].displaydetails();
+        return 1;
+    }
+}
+
+int CAQueue::peekfront()
+{
+   if (isempty())
+      return -1;
+   else
+   {
+      queuearray[front].displaydetails();
+      return 1;
+   }
+}
+
+int CAQueue::size()
+{
+    if(isempty())
+        return -1;
+    else{
+        int count=0;
+        for(int i=front;i<rear+1;i=(i%cap)+1)
+           count++;
+        return count;
+    }
+}
+
+void CAQueue::display()
+{
+    if(isempty())
+        cout << "queue is empty" << endl;
+    else {
+        int i=front;
+        while(true)
+        {
+           queuearray[i].displaydetails();
+           if(i==rear)
+              break;
+           else
+              i=(i+1)%cap;
+        }
+    }
+}
+
+int CAQueue::enqueue(CMovie ele)
+{
+    if(isfull())
+        return -1;
+    else if(isempty())
+    {
+       front=rear=0;
+       queuearray[rear]=ele;
+       return 1;
+    }
+    else
+    {
+       rear=(rear+1)%cap;
+       queuearray[rear]=ele;
+       return 2;
+    }
+}
+
+int CAQueue::dequeue()
+{
+    if(isempty())
+        return -1;
+    else if(front==rear)
+
+    {
+       queuearray[front].displaydetails();
+       queuearray[front]=CMovie();
+       front=rear=-1;
+       return 1;
+    }
+    else {
+        queuearray[front].displaydetails();
+        front=(front+1)%cap;
+        return 2;
+    }
+}
+
+int CAQueue::makelistempty()
+{
+    if(isempty())
+        return -1;
+    else {
+        while(!isempty()){
+           dequeue();
+        }
+        return 1;
+    }
+}
+[24bcs170@mepcolinux ex4a]$cat app.cpp
+#include "head.h"
+
+int main()
+{
+    CAQueue queuearray(4);
+    int choice;
+    string title, name;
+    int age, price;
+
+    cout << "\n--- Queue Menu ---\n";
+    cout << "1. Enqueue\n";
+    cout << "2. Dequeue\n";
+    cout << "3. Peekrear\n";
+    cout << "4. Peekfront\n";
+    cout << "5. Display Queue\n";
+    cout << "6. Make Queue Empty\n";
+    cout << "7. Check if Queue is Empty\n";
+    cout << "8. Check if Queue is Full\n";
+    cout << "9. Display Queue Size\n";
+    cout << "10. Exit\n";
+
+    while (true)
+    {
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+            case 1:
+            {
+                cout << "Enter Title: ";
+                cin >> title;
+                cout << "Enter name: ";
+                cin >> name;
+                cout << "Enter age: ";
+                cin >> age;
+                cout << "Enter Price: ";
+                cin >> price;
+
+                CMovie movie(title, name, age, price);
+                if (queuearray.enqueue(movie) == -1)
+                    cout << "Error: Queue is full!\n";
+                else
+                    cout << "Enqueued successfully.\n";
+                break;
+            }
+            case 2:
+            {
+                if (queuearray.dequeue() == -1)
+                    cout << "Error: Queue is empty!\n";
+                else if(queuearray.dequeue()==2)
+                   cout<<"dequeued successfully\n";
+                else
+                    cout << "Dequeued successfully.\n";
+                break;
+            }
+            case 3:
+            {
+                int peeked = queuearray.peekrear();
+                if (peeked == -1)
+                    cout << "Error: Queue is empty!\n";
+                else
+                    cout << "rear Peeked successfully" << endl;
+                break;
+            }
+
+            case 4:
+            {
+               int peeked=queuearray.peekfront();
+               if (peeked==-1)
+                  cout<<"error queue empty\n";
+               else
+                  cout <<" front peeked successfully"<<endl;
+               break;
+            }
+            case 5:
+            {
+
+                queuearray.display();
+                break;
+            }
+            case 6:
+            {
+                if(queuearray.makelistempty()==-1)
+                    cout << "Queue is already empty.\n";
+                else
+                {
+                    cout << "Queue made empty.\n";
+                }
+                break;
+            }
+            case 7:
+            {
+                if (queuearray.isempty())
+                    cout << "Queue is empty.\n";
+                else
+                    cout << "Queue is not empty.\n";
+                break;
+            }
+            case 8:
+            {
+                if(queuearray.isfull())
+                    cout << "Queue is full.\n";
+                else
+                    cout << "Queue is not full.\n";
+                break;
+            }
+            case 9:
+            {
+                if(queuearray.isempty())
+                    cout << "Queue is empty.\n"<< "Queue size:" << queuearray.size()+1 <<endl;
+                else
+                    cout << "Queue size: " << queuearray.size() << endl;
+                break;
+            }
+            case 10:
+                cout << "Exiting...\n";
+                return 0;
+            default:
+                cout << "Invalid choice! Please try again.\n";
+        }
+    }
+}
+[24bcs170@mepcolinux ex4a]$cat makefile
+test.o::app.o imp.o
+	g++ -o test app.o imp.o
+
+imp.o::imp.cpp
+	g++ -c imp.cpp
+
+app.o::app.cpp
+	g++ -c app.cpp
+[24bcs170@mepcolinux ex4a]$./test
+
+--- Queue Menu ---
+1. Enqueue
+2. Dequeue
+3. Peekrear
+4. Peekfront
+5. Display Queue
+6. Make Queue Empty
+7. Check if Queue is Empty
+8. Check if Queue is Full
+9. Display Queue Size
+10. Exit
+Enter choice: 1
+Enter Title: coolie
+Enter name: harish
+Enter age: 25
+Enter Price: 200
+Enqueued successfully.
+Enter choice: 1
+Enter Title: beast
+Enter name: varsiv
+Enter age: 58
+Enter Price: 369
+Enqueued successfully.
+Enter choice: 1
+Enter Title: basha
+Enter name: rajini
+Enter age: 70
+Enter Price: 200
+Enqueued successfully.
+Enter choice: 3
+TITLE		NAME		AGE		PRICE
+basha		rajini		70		200
+rear Peeked successfully
+Enter choice: 4
+TITLE		NAME		AGE		PRICE
+coolie		harish		25		200
+ front peeked successfully
+Enter choice: 5
+TITLE		NAME		AGE		PRICE
+coolie		harish		25		200
+TITLE		NAME		AGE		PRICE
+beast		varsiv		58		369
+TITLE		NAME		AGE		PRICE
+basha		rajini		70		200
+Enter choice: 7
+Queue is not empty.
+Enter choice: 8
+Queue is not full.
+Enter choice: 9
+Queue size: 3
+Enter choice: 2
+TITLE		NAME		AGE		PRICE
+coolie		harish		25		200
+TITLE		NAME		AGE		PRICE
+beast		varsiv		58		369
+dequeued successfully
+Enter choice: 9
+Queue size: 1
+Enter choice: 6
+TITLE		NAME		AGE		PRICE
+basha		rajini		70		200
+Queue made empty.
+Enter choice: 10
+Exiting...
+[24bcs170@mepcolinux ex4a]$exit
+exit
+
+Script done on Mon Sep 15 15:21:10 2025
+[24bcs170@mepcolinux ex4a]$cd ..
+[24bcs170@mepcolinux ex4]$cd ex4b
+[24bcs170@mepcolinux ex4b]$ls
+app.cpp  app.o  ex4b.prn  ex4B.prn  ex4.prn  header.h  imp.cpp  imp.o  makefile  test
+[24bcs170@mepcolinux ex4b]$cat ex4B.prn
+Script started on Mon Sep 15 15:34:09 2025
+[?1034h[24bcs170@mepcolinux ex4b]$cat ex4.prn
+[24bcs170@mepcolinux ex4b]$cat imp.cpp
+#include "header.h"
+
+Movie::Movie() {
+    title = "";
+    name = "";
+    age = 0;
+    price = 0;
+}
+
+Movie::Movie(string t, string n, int a, int p) {
+    title = t;
+    name = n;
+    age = a;
+    price = p;
+}
+
+Movie::~Movie() {
+}
+
+void Movie::GetMovie() {
+    cout << "Enter title: ";
+    cin >> title;
+    cout << "Enter Name: ";
+    cin >> name;
+    cout << "Enter age: ";
+    cin >> age;
+    cout << "Enter price: ";
+    cin >> price;
+}
+
+void Movie::DisplayMovie() {
+    cout << title << "\t" << name << "\t" << age << "\t" << price << endl;
+}
+
+int Movie::Getage() {
+    return age;
+}
+
+// ---------------- CAQueue Implementation ----------------
+
+CAQueue::CAQueue() {
+    front = rear = NULL;
+    count = 0;
+}
+
+CAQueue::~CAQueue() {
+    Makequeueempty();
+}
+
+bool CAQueue::Isempty() {
+    return (front == NULL);
+}
+
+bool CAQueue::Isfull() {
+
+    return false;
+}
+
+int CAQueue::Size() {
+    return count;
+}
+
+void CAQueue::Displayqueue() {
+    if (Isempty()) {
+        cout << "Queue is Empty!" << endl;
+        return;
+    }
+
+    cout << "\n:::::: MOVIE DETAILS ::::::\n";
+    cout << "Title\tNAME\tAge\tPrice\n";
+
+    Node* temp = front;
+    while (temp != NULL) {
+        temp->data.DisplayMovie();
+        temp = temp->next;
+    }
+}
+
+bool CAQueue::Enqueue(Movie m) {
+    Node* newNode = new Node;
+    if (!newNode) {
+        cout << "Memory Allocation Failed!" << endl;
+        return false;
+    }
+
+    newNode->data = m;
+    newNode->next = NULL;
+
+    if (Isempty()) {
+        front = rear = newNode;
+    } else {
+        rear->next = newNode;
+        rear = newNode;
+    }
+    count++;
+    cout << "Movie Enqueued Successfully!" << endl;
+    return true;
+}
+
+Movie CAQueue::Dequeue() {
+    if (Isempty()) {
+        cout << "Queue is Empty!" << endl;
+        return Movie();
+    }
+
+    Node* temp = front;
+    Movie m = front->data;
+    front = front->next;
+    if (front == NULL) {
+        rear = NULL;
+    }
+    delete temp;
+    count--;
+    cout << "Movie Dequeued Successfully!" << endl;
+    return m;
+}
+
+Movie CAQueue::Peek() {
+    if (Isempty()) {
+        cout << "Queue is Empty!" << endl;
+        return Movie();
+    }
+
+    cout << "\n|----- THE FRONT MOVIE -----|\n";
+    cout << "Title\tNAME\tAge\tPrice\n";
+    front->data.DisplayMovie();
+
+    cout << "\n|------- THE REAR MOVIE ------|\n";
+    cout << "Title\tNAME\tAge\tPrice\n";
+    rear->data.DisplayMovie();
+
+    return front->data;
+}
+
+void CAQueue::Makequeueempty() {
+    while (!Isempty()) {
+        Dequeue();
+    }
+    cout << "Queue Emptied!" << endl;
+}
+
+[24bcs170@mepcolinux ex4b]$cat app.cpp
+#include "header.h"
+
+int main() {
+    int c;
+    CAQueue obj;
+
+    int choice;
+    do {
+        cout << "\n===== MOVIE QUEUE MENU =====\n";
+        cout << "1. Is Empty\n";
+        cout << "2. Is Full\n";
+        cout << "3. Size\n";
+        cout << "4. Display All Movies\n";
+        cout << "5. Enqueue (Add Movie)\n";
+        cout << "6. Dequeue (Remove Movie)\n";
+        cout << "7. Peek (Front Movie&Rear Movie)\n";
+        cout << "8. Make Queue Empty\n";
+        cout << "0. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1:
+            cout << (obj.Isempty() ? "QUEUE IS EMPTY!" : "QUEUE IS NOT EMPTY!") << endl;
+            break;
+
+        case 2:
+            cout << (obj.Isfull() ? "QUEUE IS FULL!" : "QUEUE IS NOT FULL!") << endl;
+            break;
+
+        case 3: {
+            int sz = obj.Size();
+            if (sz == 0)
+                cout << "QUEUE IS EMPTY!" << endl;
+            else
+                cout << "QUEUE SIZE: " << sz << endl;
+            break;
+        }
+
+        case 4:
+            obj.Displayqueue();
+            break;
+
+        case 5: {
+            Movie m1;
+            m1.GetMovie();
+            if (!obj.Enqueue(m1))   // ✅ fixed (was c1)
+                cout << "QUEUE IS FULL!" << endl;
+            break;
+        }
+
+        case 6: {
+            Movie m1 = obj.Dequeue();
+            if (m1.Getage() == 0) {   // ✅ fixed (was c1)
+                cout << "QUEUE IS EMPTY!" << endl;
+            } else {
+                cout << "|----- DEQUEUED MOVIE -----|\n";
+                cout << "Title\tNAME\tAge\tPrice\n";
+                m1.DisplayMovie();
+            }
+            break;
+        }
+
+        case 7: {
+            Movie p = obj.Peek();
+            if (p.Getage() == 0) {
+                cout << "QUEUE IS EMPTY!" << endl;
+            }
+            break;
+        }
+
+        case 8:
+            obj.Makequeueempty();
+            break;
+
+        case 0:
+            cout << "<=== EXITING MOVIE MANAGEMENT ===>\n";
+            break;
+
+        default:
+            cout << "INVALID CHOICE!" << endl;
+        }
+
+    } while (choice != 0);
+
+    return 0;
+}
+
+[24bcs170@mepcolinux ex4b]$cat makefile
+test.o::app.o imp.o
+        g++ -o test app.o imp.o
+
+imp.o::imp.cpp
+        g++ -c imp.cpp
+
+app.o::app.cpp
+        g++ -c app.cpp
+[24bcs170@mepcolinux ex4b]$./test
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 1
+QUEUE IS EMPTY!
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 2
+QUEUE IS NOT FULL!
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 3
+QUEUE IS EMPTY!
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 4
+Queue is Empty!
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 7
+Queue is Empty!
+QUEUE IS EMPTY!
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 8
+Queue Emptied!
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 5
+Enter title: coolie
+Enter Name: rajini
+Enter age: 25
+Enter price: 200
+Movie Enqueued Successfully!
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 5
+Enter title: jananayagan
+Enter Name: 50
+Enter age: 25
+Enter price: 255
+Movie Enqueued Successfully!
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 5
+Enter title: basha
+Enter Name: rajini
+Enter age: 70
+Enter price: 369
+Movie Enqueued Successfully!
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 4
+
+:::::: MOVIE DETAILS ::::::
+Title   NAME    Age     Price
+coolie  rajini  25      200
+jananayagan     50      25      255
+basha   rajini  70      369
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 7
+
+|----- THE FRONT MOVIE -----|
+Title   NAME    Age     Price
+coolie  rajini  25      200
+
+|------- THE REAR MOVIE ------|
+Title   NAME    Age     Price
+basha   rajini  70      369
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 3
+QUEUE SIZE: 3
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 5
+Enter title: 3
+Enter Name: navin
+Enter age: 14
+Enter price: 200
+Movie Enqueued Successfully!
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 8
+Movie Dequeued Successfully!
+Movie Dequeued Successfully!
+Movie Dequeued Successfully!
+Movie Dequeued Successfully!
+Queue Emptied!
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 3
+QUEUE IS EMPTY!
+
+===== MOVIE QUEUE MENU =====
+1. Is Empty
+2. Is Full
+3. Size
+4. Display All Movies
+5. Enqueue (Add Movie)
+6. Dequeue (Remove Movie)
+7. Peek (Front Movie&Rear Movie)
+8. Make Queue Empty
+0. Exit
+Enter your choice: 0
+<=== EXITING MOVIE MANAGEMENT ===>
+Queue Emptied!
+[24bcs170@mepcolinux ex4b]$exit
+exit
+
+Script done on Mon Sep 15 15:25:42 2025
+[24bcs170@mepcolinux ex4b]$exit
+exit
+
+Script done on Mon Sep 15 15:34:21 2025
