@@ -1,0 +1,291 @@
+Script started on Thursday 13 November 2025 01:31:26 PM IST
+[?1034h[24bcs170@mepcolinux ex8]$cat header.h
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Movie
+{
+private:
+    string name;
+    string title; 
+    float price;
+    int age; 
+
+public:
+    Movie();
+    Movie(string, string, float, int);
+    void getMovie();
+    void displayMovie();
+};
+
+class Queue
+{
+private:
+    int *arr;
+    int front, rear, capacity;
+
+public:
+    Queue(int);
+    ~Queue();
+    bool isEmpty();
+    bool isFull();
+    void enqueue(int);
+    int dequeue();
+};
+
+class GraphAdjMatrix
+{
+private:
+    Movie *movies;
+    int **matrix;
+    int n;
+    void DFSRecursive(int, bool *);
+
+public:
+    GraphAdjMatrix(int);
+    ~GraphAdjMatrix();
+    void getMovies();
+    void getConnections();
+    void BFS(int);
+    void DFS(int);
+};
+
+[24bcs170@mepcolinux ex8]$cat imp.cpp
+#include "header.h"
+
+
+Movie::Movie() { name = ""; title = ""; price = 0; age = 0; }
+Movie::Movie(string n, string t, float p, int a)
+{
+    name = n; title = t; price = p; age = a;
+}
+void Movie::getMovie()
+{
+    cout << "Enter Movie Name: ";
+    cin >> name;
+    cout << "Enter customer Name: ";
+    cin >> title;
+    cout << "Enter Ticket Price: ";
+    cin >> price;
+    cout << "Enter Age Limit: ";
+    cin >> age;
+}
+void Movie::displayMovie()
+{
+    cout << name << "\t" << title << "\t" << price << "\t" << age << endl;
+}
+
+// ===== Queue =====
+Queue::Queue(int c)
+{
+    capacity = c;
+    front = rear = -1;
+    arr = new int[c];
+}
+Queue::~Queue() { delete[] arr; }
+bool Queue::isEmpty() { return front == -1 || front > rear; }
+bool Queue::isFull() { return rear == capacity - 1; }
+void Queue::enqueue(int x)
+{
+    if (isFull()) return;
+    if (front == -1) front = 0;
+    arr[++rear] = x;
+}
+int Queue::dequeue()
+{
+    if (isEmpty()) return -1;
+    int x = arr[front++];
+    if (front > rear) front = rear = -1;
+    return x;
+}
+
+// ===== GraphAdjMatrix =====
+GraphAdjMatrix::GraphAdjMatrix(int n1)
+{
+    n = n1;
+    movies = new Movie[n];
+    matrix = new int *[n];
+    for (int i = 0; i < n; i++)
+    {
+        matrix[i] = new int[n];
+        for (int j = 0; j < n; j++) matrix[i][j] = 0;
+    }
+}
+GraphAdjMatrix::~GraphAdjMatrix()
+{
+    for (int i = 0; i < n; i++) delete[] matrix[i];
+    delete[] matrix;
+    delete[] movies;
+}
+void GraphAdjMatrix::getMovies()
+{
+    for (int i = 0; i < n; i++)
+    {
+        cout << "\nMovie " << i << ":\n";
+        movies[i].getMovie();
+    }
+}
+void GraphAdjMatrix::getConnections()
+{
+    int s, d;
+    char ch;
+    do
+    {
+        cout << "Enter connection (source destination): ";
+        cin >> s >> d;
+        if (s >= 0 && d >= 0 && s < n && d < n && s != d)
+        {
+            matrix[s][d] = matrix[d][s] = 1;
+        }
+        else
+            cout << "Invalid!\n";
+        cout << "Add more (y/n)? ";
+        cin >> ch;
+    } while (ch == 'y' || ch == 'Y');
+}
+
+
+void GraphAdjMatrix::BFS(int start)
+{
+    bool *visited = new bool[n]();
+    Queue q(n);
+
+    cout << "\nBFS Traversal (Movies):\nName\tTitle\tPrice\tAge\t";
+    for (int i = 0; i < n; ++i)
+    
+        int currentNode = (i == 0) ? start : i;
+        
+        if (!visited[currentNode])
+        {
+            q.enqueue(currentNode);
+            visited[currentNode] = true;
+
+            while (!q.isEmpty())
+            {
+                int v = q.dequeue();
+                movies[v].displayMovie(); 
+                
+                
+                for (int j = 0; j < n; j++)
+                {
+                    if (matrix[v][j] == 1 && !visited[j])
+                    {
+                        q.enqueue(j);
+                        visited[j] = true;
+                    }
+                }
+            }
+        }
+    }
+    delete[] visited;
+}
+
+
+void GraphAdjMatrix::DFS(int start)
+{
+    bool *visited = new bool[n]();
+    cout << "\nDFS Traversal (Movies):\nName\tTitle\tPrice\tAge\n";
+    
+ 
+    DFSRecursive(start, visited);
+
+    for (int i = 0; i < n; i++) {
+        if (!visited[i]) {
+            DFSRecursive(i, visited);
+        }
+    }
+
+    delete[] visited;
+}
+
+
+void GraphAdjMatrix::DFSRecursive(int v, bool *visited)
+{
+    visited[v] = true;
+    movies[v].displayMovie();
+    for (int i = 0; i < n; i++)
+        if (matrix[v][i] == 1 && !visited[i])
+            DFSRecursive(i, visited);
+}
+
+[24bcs170@mepcolinux ex8]$cat app.cpp
+#include "header.h"
+
+int main()
+{
+    int n, start;
+    cout << "Enter number of movies: ";
+    cin >> n;
+    GraphAdjMatrix g(n);
+    g.getMovies();
+    g.getConnections();
+    cout << "Enter start index for traversal: ";
+    cin >> start;
+    g.BFS(start);
+    g.DFS(start);
+    return 0;
+}
+
+[24bcs170@mepcolinux ex8]$cat makefile
+test.o: imp.o app.o
+	g++ imp.o app.o -o test3
+
+imp.o: imp.cpp header.h
+	g++ -c imp.cpp
+
+app.o: app.cpp header.h
+	g++ -c app.cpp
+[24bcs170@mepcolinux ex8]$./testK3
+Enter number of movies: 4
+
+Movie 0:
+Enter Movie Name: coolie
+Enter customer Name: harish
+Enter Ticket Price: 200
+Enter Age Limit: 19
+
+Movie 1:
+Enter Movie Name: basha
+Enter customer Name: rajini
+Enter Ticket Price: 100
+Enter Age Limit: 70
+
+Movie 2:
+Enter Movie Name: jana
+Enter customer Name: vijay
+Enter Ticket Price: 50
+Enter Age Limit: 50
+
+Movie 3:
+Enter Movie Name: thala
+Enter customer Name: ajith
+Enter Ticket Price: 58
+Enter Age Limit: 300
+Enter connection (source destination): 0 1
+Add more (y/n)? y
+Enter connection (source destination): 1 2
+Add more (y/n)? y
+Enter connection (source destination): 2 0
+Add more (y/n)? y
+Enter connection (source destination): 2 3
+Add more (y/n)? y
+Enter connection (source destination): 0 3
+Add more (y/n)? n
+Enter start index for traversal: 0
+
+BFS Traversal (Movies):
+Name	Title	Price	Age
+coolie	harish	200	19
+basha	rajini	100	70
+jana	vijay	50	50
+thala	ajith	58	300
+
+DFS Traversal (Movies):
+Name	Title	Price	Age
+coolie	harish	200	19
+basha	rajini	100	70
+jana	vijay	50	50
+thala	ajith	58	300
+[24bcs170@mepcolinux ex8]$exit
+exit
