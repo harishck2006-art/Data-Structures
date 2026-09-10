@@ -1,0 +1,917 @@
+[24bcs170@mepcolinux ex2]$cat EX2.prn
+Script started on Thu 21 Aug 2025 12:08:16 PM IST
+[?1034h[24bcs170@mepcolinux EX2]$cat head.h
+#ifndef HEAD_H
+#define HEAD_H
+
+#include <iostream>
+using namespace std;
+
+class CMovieTicket
+{
+private:
+    string name;
+    string movieName;
+    int age;
+
+public:
+    CMovieTicket(string, int, string, int);
+    CMovieTicket();
+    void getData();
+    void displayData(int);
+    int seatNo;
+};
+
+class CNode
+{
+private:
+    CMovieTicket data;
+    CNode *next;
+    friend class CLList;
+
+public:
+    CNode();
+    CNode(CMovieTicket, CNode *);
+    ~CNode();
+    void get();
+    void display(int);
+};
+
+class CLList
+{
+private:
+    CNode *first;
+    void displayReverseHelper(CNode *node, int &count);
+
+public:
+    CLList();
+    int displayList();
+    int displayLength();
+    int isEmpty();
+    int insertAtFirst(CNode *);
+    int insertByPosition(int, CNode *);
+    int insertAtLast(CNode *);
+    int insertBeforeSeat(int, CNode *);
+    int insertAfterSeat(int, CNode *);
+    int deleteAtFirst();
+    int deleteAtLast();
+    int deleteByPosition(int);
+    int deleteBeforeSeat(int);
+    int deleteAfterSeat(int);
+    int makeListEmpty();
+    int searchBySeatNo(int);
+    int deleteBySeatNo(int);
+    int replaceSeatDetails(int);
+    int getSeatDetails(int);
+    int sort();
+    int displayReverse();
+};
+
+#endif
+
+[24bcs170@mepcolinux EX2]$cat imp.cpp
+#include "head.h"
+
+CMovieTicket::CMovieTicket()
+{
+    name = "UNKNOWN";
+    age = 0;
+    movieName = "UNKNOWN";
+    seatNo = 0;
+}
+
+CMovieTicket::CMovieTicket(string n, int a, string m, int s)
+{
+    name = n;
+    age = a;
+    movieName = m;
+    seatNo = s;
+}
+
+void CMovieTicket::getData()
+{
+    cout << "\n_____FILL THE DETAILS_____\n";
+    cout << "Name : ";
+    cin >> name;
+    cout << "Age : ";
+    cin >> age;
+    cout << "Movie Name : ";
+    cin >> movieName;
+    cout << "Seat No.  : ";
+    cin >> seatNo;
+}
+
+void CMovieTicket::displayData(int n)
+{
+    cout << movieName << "\t|\t" << name << "\t\t|\t" << age << "\t|\t" << seatNo << endl;
+}
+
+// ===================== CNode =====================
+CNode::CNode()
+{
+    next = NULL;
+}
+
+CNode::CNode(CMovieTicket t, CNode *n)
+{
+    data = t;
+    next = n;
+}
+
+CNode::~CNode()
+{
+    next = NULL;
+}
+
+void CNode::get()
+{
+    data.getData();
+}
+
+void CNode::display(int n)
+{
+    data.displayData(n);
+}
+
+// ===================== CLList =====================
+CLList::CLList()
+{
+    first = NULL;
+}
+
+int CLList::isEmpty()
+{
+    return first == NULL ? 1 : 0;
+}
+
+int CLList::displayLength()
+{
+    if (isEmpty())
+        return -1;
+    int count = 0;
+    CNode *temp = first;
+    while (temp != NULL)
+    {
+        count++;
+        temp = temp->next;
+    }
+    return count;
+}
+
+int CLList::displayList()
+{
+    if (isEmpty())
+        return -1;
+    int count = 0;
+    cout << "Movie\t|\tCustomer\t|\tAge\t|\tSeatNo\n";
+    cout << "-----------------------------------------------------------------\n";
+    CNode *temp = first;
+    while (temp != NULL)
+    {
+        count++;
+        temp->display(count);
+        temp = temp->next;
+    }
+    return 1;
+}
+
+int CLList::insertAtFirst(CNode *newNode)
+{
+    if (isEmpty())
+    {
+        first = newNode;
+        return 1;
+    }
+    newNode->next = first;
+    first = newNode;
+    return 2;
+}
+
+int CLList::insertByPosition(int pos, CNode *n)
+{
+    if (isEmpty())
+    {
+        if (pos == 1)
+        {
+            insertAtFirst(n);
+            return 1;
+        }
+        else
+            return -2; // invalid position
+    }
+    else if (pos == 1)
+    {
+        insertAtFirst(n);
+        return 2;
+    }
+    int count = 1;
+    CNode *temp = first, *prev;
+    while (temp != NULL && count < (pos - 1))
+    {
+        temp = temp->next;
+        count++;
+    }
+    if (count == (pos - 1) && temp != NULL)
+    {
+        prev = temp;
+        temp = temp->next;
+        prev->next = n;
+        n->next = temp;
+        return 3;
+    }
+    return -2;
+}
+
+int CLList::insertAtLast(CNode *n)
+{
+    if (isEmpty())
+    {
+        first = n;
+        return 1;
+    }
+    CNode *temp = first;
+    while (temp->next != NULL)
+    {
+        temp = temp->next;
+    }
+    temp->next = n;
+    return 2;
+}
+
+// ===== NEW: Insert Before Seat =====
+int CLList::insertBeforeSeat(int seat, CNode *n)
+{
+    if (isEmpty())
+        return -1;
+    if (first->data.seatNo == seat)
+        return insertAtFirst(n);
+
+    CNode *temp = first, *prev = NULL;
+    while (temp != NULL && temp->data.seatNo != seat)
+    {
+        prev = temp;
+        temp = temp->next;
+    }
+    if (temp == NULL)
+        return -2; // seat not found
+
+    prev->next = n;
+    n->next = temp;
+    return 1;
+}
+
+// ===== NEW: Insert After Seat =====
+int CLList::insertAfterSeat(int seat, CNode *n)
+{
+    if (isEmpty())
+        return -1;
+
+    CNode *temp = first;
+    while (temp != NULL && temp->data.seatNo != seat)
+    {
+        temp = temp->next;
+    }
+    if (temp == NULL)
+        return -2;
+
+    n->next = temp->next;
+    temp->next = n;
+    return 1;
+}
+
+int CLList::deleteAtFirst()
+{
+    if (isEmpty())
+        return -1;
+    CNode *temp = first;
+    first = first->next;
+    delete temp;
+    return 2;
+}
+
+int CLList::deleteAtLast()
+{
+    if (isEmpty())
+        return -1;
+    CNode *temp = first, *prev = NULL;
+    while (temp->next != NULL)
+    {
+        prev = temp;
+        temp = temp->next;
+    }
+    if (prev)
+        prev->next = NULL;
+    else
+        first = NULL;
+    delete temp;
+    return 1;
+}
+
+int CLList::deleteByPosition(int pos)
+{
+    if (isEmpty())
+        return -1;
+    if (pos == 1)
+        return deleteAtFirst();
+
+    CNode *prev = NULL, *temp = first;
+    int count = 1;
+    while (temp != NULL && count < (pos - 1))
+    {
+        temp = temp->next;
+        count++;
+    }
+    if (count == (pos - 1) && temp != NULL && temp->next != NULL)
+    {
+        prev = temp;
+        temp = temp->next;
+        prev->next = temp->next;
+        delete temp;
+        return 1;
+    }
+    return -2;
+}
+
+// ===== NEW: Delete Before Seat =====
+int CLList::deleteBeforeSeat(int seat)
+{
+    if (isEmpty() || first->data.seatNo == seat)
+        return -1; // nothing before
+
+    CNode *prev = NULL, *curr = first, *beforePrev = NULL;
+    while (curr != NULL && curr->data.seatNo != seat)
+    {
+        beforePrev = prev;
+        prev = curr;
+        curr = curr->next;
+    }
+    if (curr == NULL || prev == NULL)
+        return -2; // seat not found or no node before it
+
+    if (beforePrev == NULL)
+        first = curr;
+    else
+        beforePrev->next = curr;
+
+    delete prev;
+    return 1;
+}
+
+// ===== NEW: Delete After Seat =====
+int CLList::deleteAfterSeat(int seat)
+{
+    if (isEmpty())
+        return -1;
+
+    CNode *temp = first;
+    while (temp != NULL && temp->data.seatNo != seat)
+    {
+        temp = temp->next;
+    }
+    if (temp == NULL || temp->next == NULL)
+        return -2; // seat not found or no after node
+
+    CNode *delNode = temp->next;
+    temp->next = delNode->next;
+    delete delNode;
+    return 1;
+}
+
+int CLList::makeListEmpty()
+{
+    while (!isEmpty())
+    {
+        deleteAtFirst();
+    }
+    return 1;
+}
+
+int CLList::searchBySeatNo(int seat)
+{
+    if (isEmpty())
+        return -1;
+    int pos = 1;
+    CNode *temp = first;
+    while (temp != NULL)
+    {
+        if (temp->data.seatNo == seat)
+            return pos;
+        temp = temp->next;
+        pos++;
+    }
+    return -2;
+}
+
+int CLList::deleteBySeatNo(int seat)
+{
+    if (isEmpty())
+        return -1;
+    if (first->data.seatNo == seat)
+        return deleteAtFirst();
+
+    CNode *temp = first, *prev = NULL;
+    while (temp != NULL && temp->data.seatNo != seat)
+    {
+        prev = temp;
+        temp = temp->next;
+    }
+    if (temp == NULL)
+        return -2; // seat not found
+
+    prev->next = temp->next;
+    delete temp;
+    return 1;
+}
+
+int CLList::replaceSeatDetails(int pos)
+{
+    if (isEmpty())
+        return -1;
+    int count = 1;
+    CNode *temp = first;
+    while (temp != NULL && count < pos)
+    {
+        temp = temp->next;
+        count++;
+    }
+    if (temp == NULL)
+        return -2;
+
+    cout << "Enter new details for position " << pos << endl;
+    temp->get();
+    return 1;
+}
+
+int CLList::getSeatDetails(int pos)
+{
+    if (isEmpty())
+        return -1;
+    int count = 1;
+    CNode *temp = first;
+    while (temp != NULL && count < pos)
+    {
+        temp = temp->next;
+        count++;
+    }
+    if (temp == NULL)
+    {
+        cout << "Invalid position or not found\n";
+        return -2;
+    }
+    cout << "Movie\t|\tCustomer\t|\tAge\t|\tSeatNo\n";
+    cout << "----------------------------------------------------\n";
+    temp->display(pos);
+    return 1;
+}
+
+int CLList::sort()
+{
+    if (isEmpty() || first->next == NULL)
+        return -1;
+    for (CNode *i = first; i->next != NULL; i = i->next)
+    {
+        for (CNode *j = i->next; j != NULL; j = j->next)
+        {
+            if (i->data.seatNo > j->data.seatNo)
+            {
+                swap(i->data, j->data);
+            }
+        }
+    }
+    return 1;
+}
+
+void CLList::displayReverseHelper(CNode *node, int &count)
+{
+    if (node == NULL)
+        return;
+    displayReverseHelper(node->next, count);
+    count++;
+    node->display(count);
+}
+
+int CLList::displayReverse()
+{
+    if (isEmpty())
+        return -1;
+    int count = 0;
+    cout << "Movie\t|\tCustomer\t|\tAge\t|\tSeatNo\n";
+    cout << "----------------------------------------------------\n";
+    displayReverseHelper(first, count);
+    return 1;
+}
+
+[24bcs170@mepcolinux EX2]$cat app.cpp
+#include "head.h"
+
+int main()
+{
+    int s, pos, ch;
+    CLList obj;
+    CMovieTicket t;
+
+    cout << "Movie Ticket Booking System\n";
+    cout << "1.Display list\n";
+    cout << "2.Check Empty\n";
+    cout << "3.Length of the list\n";
+    cout << "4.Insert at first\n";
+    cout << "5.Insert By Position\n";
+    cout << "6.Insert at Last\n";
+    cout << "7.Insert Before Seat\n";
+    cout << "8.Insert After Seat\n";
+    cout << "9.Delete at First\n";
+    cout << "10.Delete At Last\n";
+    cout << "11.Delete By position\n";
+    cout << "12.Delete Before Seat\n";
+    cout << "13.Delete After Seat\n";
+    cout << "14.Delete By SeatNo.\n";
+    cout << "15.Search By seat No.\n";
+    cout << "16.Replace by position\n";
+    cout << "17.Get element By Position\n";
+    cout << "18.Empty the List\n";
+    cout << "19.Sort\n";
+    cout << "20.Display Reverse\n";
+    cout << "0. Exit!\n";
+
+    do
+    {
+        cout << "\n\tEnter the choice : ";
+        cin >> ch;
+        cout << endl;
+
+        switch (ch)
+        {
+        case 1:
+            if (obj.displayList() == -1)
+                cout << "List Is Empty..!\n";
+            break;
+
+        case 2:
+            cout << (obj.isEmpty() ? "List is Empty..!\n" : "List is Not Empty..!\n");
+            break;
+
+        case 3:
+            if (obj.displayLength() == -1)
+                cout << "List is Empty..!\n";
+            else
+                cout << "Length is : " << obj.displayLength() << endl;
+            break;
+
+        case 4:
+            t.getData();
+            obj.insertAtFirst(new CNode(t, NULL));
+            cout << "Inserted..!\n";
+            break;
+
+        case 5:
+            cout << "Enter the Position to insert : ";
+            cin >> pos;
+
+            // Validate position first before taking ticket details
+            if (pos < 1 || pos > obj.displayLength() + 1)
+            {
+                cout << "Invalid position! Cannot insert.\n";
+                break;
+            }
+
+            // Only after valid position input, get ticket details
+            t.getData();
+            {
+                CNode *node = new CNode(t, NULL);
+                int result = obj.insertByPosition(pos, node);
+                if (result == -2)
+                    cout << "Position out of index!\n";
+                else
+                    cout << "Inserted at position " << pos << "!\n";
+            }
+            break;
+
+        case 6:
+            t.getData();
+            obj.insertAtLast(new CNode(t, NULL));
+            cout << "Inserted..!\n";
+            break;
+
+        case 7:
+            cout << "Enter seat no. before which to insert : ";
+            cin >> s;
+            t.getData();
+            if (obj.insertBeforeSeat(s, new CNode(t, NULL)) < 0)
+                cout << "Seat not found or list empty..!\n";
+            else
+                cout << "Inserted before seat " << s << "!\n";
+            break;
+
+        case 8:
+            cout << "Enter seat no. after which to insert : ";
+            cin >> s;
+            t.getData();
+            if (obj.insertAfterSeat(s, new CNode(t, NULL)) < 0)
+                cout << "Seat not found or list empty..!\n";
+            else
+                cout << "Inserted after seat " << s << "!\n";
+            break;
+
+        case 9:
+            cout << (obj.deleteAtFirst() == -1 ? "List is Empty..!\n" : "Deleted..!\n");
+            break;
+
+        case 10:
+            cout << (obj.deleteAtLast() == -1 ? "List is Empty..!\n" : "Deleted..!\n");
+            break;
+
+        case 11:
+            cout << "Enter the Position to delete : ";
+            cin >> pos;
+            if (obj.deleteByPosition(pos) == -2)
+                cout << "Position Out of Index..!\n";
+            else
+                cout << "Deleted.. !\n";
+            break;
+
+        case 12:
+            cout << "Enter seat no. before which to delete : ";
+            cin >> s;
+            if (obj.deleteBeforeSeat(s) < 0)
+                cout << "Cannot delete before given seat..!\n";
+            else
+                cout << "Deleted before seat " << s << "!\n";
+            break;
+
+        case 13:
+            cout << "Enter seat no. after which to delete : ";
+            cin >> s;
+            if (obj.deleteAfterSeat(s) < 0)
+                cout << "Cannot delete after given seat..!\n";
+            else
+                cout << "Deleted after seat " << s << "!\n";
+            break;
+
+        case 14:
+            cout << "SeatNo. to delete : ";
+            cin >> s;
+            if (obj.deleteBySeatNo(s) == -2)
+                cout << "Seat not found..!\n";
+            else
+                cout << "Seat Deleted..!\n";
+            break;
+
+        case 15:
+            cout << "Seat No. to search : ";
+            cin >> s;
+            {
+                int a = obj.searchBySeatNo(s);
+                if (a > 0)
+                    cout << "Seat is Occupied. Detail No." << a << endl;
+                else
+                    cout << "Not found!\n";
+            }
+            break;
+
+        case 16:
+            cout << "Enter the position to Replace : ";
+            cin >> pos;
+            if (obj.replaceSeatDetails(pos) < 0)
+                cout << "Invalid position or List Empty!\n";
+            else
+                cout << "Replaced Detail no. " << pos << endl;
+            break;
+
+        case 17:
+            cout << "Enter the position to Get Details : ";
+            cin >> pos;
+            obj.getSeatDetails(pos);
+            break;
+
+        case 18:
+            obj.makeListEmpty();
+            cout << "List Cleared..!\n";
+            break;
+
+        case 19:
+            obj.sort();
+            cout << "Sorted..!\n";
+            break;
+
+        case 20:
+            if (obj.displayReverse() == -1)
+                cout << "List is Empty..!\n";
+            break;
+
+        case 0:
+            cout << "Exiting the program...\n";
+            break;
+
+        default:
+            cout << "Invalid choice! Please try again.\n";
+        }
+
+    } while (ch != 0);
+
+    return 0;
+}
+
+[24bcs170@mepcolinux EX2]$cat makefile
+exe: imp.o app.o
+	c++ imp.o app.o -o exe
+imp.o: imp.cpp head.h
+	c++ imp.cpp -c
+app.o: app.cpp head.h
+[24bcs170@mepcolinux EX2]$make
+c++ imp.cpp -c
+c++ imp.o app.o -o exe
+[24bcs170@mepcolinux EX2]$./exe
+Movie Ticket Booking System
+1.Display list
+2.Check Empty
+3.Length of the list
+4.Insert at first
+5.Insert By Position
+6.Insert at Last
+7.Insert Before Seat
+8.Insert After Seat
+9.Delete at First
+10.Delete At Last
+11.Delete By position
+12.Delete Before Seat
+13.Delete After Seat
+14.Delete By SeatNo.
+15.Search By seat No.
+16.Replace by position
+17.Get element By Position
+18.Empty the List
+19.Sort
+20.Display Reverse
+0. Exit!
+
+	Enter the choice : 1
+
+List Is Empty..!
+
+	Enter the choice : 2
+
+List is Empty..!
+
+	Enter the choice : 3
+
+List is Empty..!
+
+	Enter the choice : 4
+
+
+_____FILL THE DETAILS_____
+Name : harish
+Age : 18
+Movie Name : coolie
+Seat No.  : 10
+Inserted..!
+
+	Enter the choice : 5
+
+Enter the Position to insert : 2
+
+_____FILL THE DETAILS_____
+Name : varshiv
+Age : 18
+Movie Name : baasha
+Seat No.  : 11
+Inserted at position 2!
+
+	Enter the choice : 6
+
+
+_____FILL THE DETAILS_____
+Name : navin
+Age : 19
+Movie Name : billa
+Seat No.  : 13
+Inserted..!
+
+	Enter the choice : 7
+
+Enter seat no. before which to insert : 11
+
+_____FILL THE DETAILS_____
+Name : akash
+Age : 18
+Movie Name : varisu
+Seat No.  : 16
+Inserted before seat 11!
+
+	Enter the choice : 8
+
+Enter seat no. after which to insert :13
+
+_____FILL THE DETAILS_____
+Name : rohith
+Age : 18
+Movie Name : thala
+Seat No.  : 18
+Inserted after seat 13!
+
+	Enter the choice : 1
+
+Movie	|	Customer	|	Age	|	SeatNo
+-----------------------------------------------------------------
+coolie	|	harish		|	18	|	10
+varisu	|	akash		|	18	|	16
+baasha	|	varshiv		|	18	|	11
+billa	|	navin		|	19	|	13
+thala	|	rohith		|	18	|	18
+
+	Enter the choice : 2
+
+List is Not Empty..!
+
+	Enter the choice : 3
+
+Length is : 5
+
+	Enter the choice : 15
+
+Seat No. to search : 10
+Seat is Occupied. Detail No.1
+
+	Enter the choice : 16
+
+Enter the position to Replace : 13
+Invalid position or List Empty!
+
+	Enter the choice : 16
+
+Enter the position to Replace : 5
+Enter new details for position 5
+
+_____FILL THE DETAILS_____
+Name : sachin
+Age : 18
+Movie Name : sachin
+Seat No.  : 28
+Replaced Detail no. 5
+
+	Enter the choice : 17
+
+Enter the position to Get Details : 2
+Movie	|	Customer	|	Age	|	SeatNo
+----------------------------------------------------
+varisu	|	akash		|	18	|	16
+
+	Enter the choice : 19
+
+Sorted..!
+
+	Enter the choice : 20
+
+Movie	|	Customer	|	Age	|	SeatNo
+----------------------------------------------------
+sachin	|	sachin		|	18	|	28
+varisu	|	akash		|	18	|	16
+billa	|	navin		|	19	|	13
+baasha	|	varshiv		|	18	|	11
+coolie	|	harish		|	18	|	10
+
+	Enter the choice : 9
+
+Deleted..!
+
+	Enter the choice : 10
+
+Deleted..!
+
+	Enter the choice : 11
+
+Enter the Position to delete : 2
+Deleted.. !
+
+	Enter the choice : 13
+
+Enter seat no. after which to delete : 11
+Deleted after seat 11!
+
+	Enter the choice : 14
+
+SeatNo. to delete : 10
+Seat not found..!
+
+	Enter the choice : 14
+
+SeatNo. to delete : 13
+Seat not found..!
+
+	Enter the choice : 14
+
+SeatNo. to delete : 11
+Seat Deleted..!
+
+	Enter the choice : 14
+
+SeatNo. to delete : 11
+Seat Deleted..!
+
+	Enter the choice : 17
+
+Enter the position to Get Details : 3
+
+	Enter the choice : 0
+
+Exiting the program...
