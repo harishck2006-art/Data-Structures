@@ -1,0 +1,811 @@
+[24bcs170@mepcolinux ex5]$cat head.h
+#include <iostream>
+using namespace std;
+
+class CNode;
+class CBST;
+
+class Movie
+{
+    friend class CBST;
+private:
+    string title;
+    string name;
+    int age;
+    int price;
+public:
+    Movie();
+    Movie(string, string, int, int);
+    Movie(const Movie &);
+    ~Movie();
+    void GetMovie();
+    void DisplayMovie();
+    int Getage();
+};
+
+class CNode
+{
+    friend class CBST;
+private:
+    Movie data;
+    CNode *left;
+    CNode *right;
+public:
+    CNode();
+    CNode(Movie);
+    ~CNode();
+    void Getdata();
+    void Displaydata();
+};
+
+class CBST
+{
+private:
+    CNode *root;
+    void FreeTree(CNode* node);  
+public:
+    CBST();
+    ~CBST();
+    CNode* Getroot();
+    void Setroot(CNode *r);
+    bool Isempty();
+    bool Insert(CNode *,CNode *);
+    void Inorder(CNode*);
+    CNode* Findmin(CNode*);
+    CNode* Findmax(CNode*);
+    CNode* Search(CNode*,int);
+    void Preorder(CNode*);
+    void Postorder(CNode*);
+    CNode* Deleteelt(CNode*,int,bool&);
+
+   
+    void MakeEmpty();
+};
+
+[24bcs170@mepcolinux ex5]$cat imp.cpp
+#include "head.h"
+
+// |------Movie IMPLEMENTATION------|
+Movie::Movie()
+{
+    title = "";
+    name  = "";
+    age   = 0;
+    price = 0;
+}
+Movie::Movie(string t, string n, int a, int p)
+{
+    title = t;
+    name  = n;
+    age   = a;
+    price = p;
+}
+Movie::Movie(const Movie &m)
+{
+    title = m.title;
+    name  = m.name;
+    age   = m.age;
+    price = m.price;
+}
+Movie::~Movie()
+{
+}
+void Movie::GetMovie()
+{
+    cout << "Enter Movie Title: ";
+    cin >> title;
+    cout << "Enter Customer Name: ";
+    cin >> name;
+    cout << "Enter Age: ";
+    cin >> age;
+    cout << "Enter Ticket Price: ";
+    cin >> price;
+}
+void Movie::DisplayMovie()
+{
+    cout << title << "\t\t" << name << "\t\t" << age << "\t\t" << price << "\n" << endl;
+}
+int Movie::Getage()
+{
+    return age;
+}
+
+//|------CNODE IMPLEMENTATION------|
+CNode::CNode()
+{
+    right = left = NULL;
+}
+CNode::CNode(Movie d)
+{
+    data = d;
+    right = left = NULL;
+}
+CNode::~CNode()
+{
+    right = left = NULL;
+}
+void CNode::Getdata()
+{
+    data.GetMovie();
+}
+void CNode::Displaydata()
+{
+    data.DisplayMovie();
+}
+
+//"|------BST IMPLEMENTATION------|
+CBST::CBST()
+{
+   root = NULL;
+}
+void CBST::FreeTree(CNode* node)
+{
+    if(node)
+    {
+        FreeTree(node->left);
+        FreeTree(node->right);
+        delete node;
+    }
+}
+CBST::~CBST()
+{
+   FreeTree(root);
+   root = NULL;
+}
+CNode* CBST::Getroot()
+{
+   return root;
+}
+void CBST::Setroot(CNode* r)
+{
+   root = r;
+}
+bool CBST::Isempty()
+{
+    return (root == NULL);
+}
+bool CBST::Insert(CNode *temp, CNode *newNode)
+{
+    if(Isempty())
+    {
+        root = newNode;
+        return true;
+    }
+    else
+    {
+        if(temp->data.age > newNode->data.age)
+        {
+            if(temp->left == NULL)
+            {
+                temp->left = newNode;
+                return true;
+            }
+            else
+                return Insert(temp->left, newNode);
+        }
+        else if(temp->data.age < newNode->data.age)
+        {
+            if(temp->right == NULL)
+            {
+                temp->right = newNode;
+                return true;
+            }
+            else
+                return Insert(temp->right, newNode);
+        }
+        else
+            return false;
+    }
+}
+void CBST::Inorder(CNode *temp)
+{
+    if(temp != NULL)
+    {
+        Inorder(temp->left);
+        temp->data.DisplayMovie();
+        Inorder(temp->right);
+    }
+}
+CNode* CBST::Findmin(CNode* root)
+{
+    CNode* temp = root;
+    while(temp->left != NULL)
+    {
+        temp = temp->left;
+    }
+    return temp;
+}
+CNode* CBST::Findmax(CNode* root)
+{
+    CNode* temp = root;
+    while(temp->right != NULL)
+    {
+        temp = temp->right;
+    }
+    return temp;
+}
+CNode* CBST::Search(CNode* temp, int elt)
+{
+    if(temp == NULL || temp->data.age == elt)
+    {
+        return temp;
+    }
+    else if(temp->data.age < elt)
+    {
+        return Search(temp->right, elt);
+    }
+    else if(temp->data.age > elt)
+    {
+        return Search(temp->left, elt);
+    }
+    else
+    {
+        return NULL;
+    }
+}
+void CBST::Preorder(CNode* temp)
+{
+    if(temp != NULL)
+    {
+        temp->data.DisplayMovie();
+        Preorder(temp->left);
+        Preorder(temp->right);
+    }
+}
+void CBST::Postorder(CNode* temp)
+{
+    if(temp != NULL)
+    {
+        Postorder(temp->left);
+        Postorder(temp->right);
+        temp->data.DisplayMovie();
+    }
+}
+CNode* CBST::Deleteelt(CNode* temp, int elt, bool &status)
+{
+    if (temp == NULL)
+    {
+        status = false;
+        return NULL;
+    }
+    else if (elt < temp->data.age)
+    {
+        temp->left  = Deleteelt(temp->left,  elt, status);
+    }
+    else if (elt > temp->data.age)
+    {
+        temp->right = Deleteelt(temp->right, elt, status);
+    }
+    else
+    { // found it
+        if (temp->left == NULL && temp->right == NULL)
+        {
+            delete temp;
+            temp = NULL;
+            status = true;
+        }
+        else if (temp->left == NULL)
+        {
+            CNode* child = temp->right;
+            delete temp;
+            temp = child;
+            status = true;
+        }
+        else if (temp->right == NULL)
+        {
+            CNode* child = temp->left;
+            delete temp;
+            temp = child;
+            status = true;
+        }
+        else
+        {
+            CNode* min = Findmin(temp->right);
+            temp->data = min->data;
+            temp->right = Deleteelt(temp->right, min->data.age, status);
+        }
+    }
+    return temp;
+}
+
+
+void CBST::MakeEmpty()
+{
+    FreeTree(root);
+    root = NULL;
+    cout << "The BST is  completely empty!\n";
+}
+
+[24bcs170@mepcolinux ex5]$cat app.cpp
+#include "head.h"
+
+int main()
+{
+    CBST b;
+    bool ret;
+    int n;
+    do
+    {
+        cout<<"1.Isempty\n2. Insert Movie\n3. InOrder\n4.Findmin\n5.Findmax\n6.Search\n7.Preorder\n8.Postorder\n9.Delete\n10.Getroot\n11.MakeEmpty\n0.Exit \n";
+        cout<<"Enter your choice: ";
+        cin>>n;
+        switch(n)
+        {
+            case 1:
+            {
+               ret=b.Isempty();
+               if(ret)
+                   cout<<"Empty Tree !"<<endl;
+               else
+                   cout<<"Not empty tree !"<<endl;
+               break;
+            }
+            case 2:
+            {
+                Movie d;
+                d.GetMovie();
+                CNode* newnode = new CNode(d);
+                CNode* root=b.Getroot();
+                ret = b.Insert(root,newnode);
+                if(ret)
+                    cout<<"Movie Ticket inserted into BST\n";
+                else
+                    cout<<"Insertion failed.\n";
+                break;
+            }
+            case 3:
+            {
+                CNode* root=b.Getroot();
+                if(root==NULL)
+                {
+                    cout<<"THE TREE IS EMPTY ! CANT DO InORDER TRAVERSAL !"<<endl;
+                    break;
+                }
+                cout<<"InOrder Traversal\n";
+                cout<<"Title\t\tName\t\tAge\t\tPrice\n";
+                cout<<"==================================\n";
+                b.Inorder(root);
+                cout<<"\n";
+                break;
+            }
+            case 4:
+            {
+                CNode* root=b.Getroot();
+                if(root==NULL)
+                {
+                    cout<<"THE TREE IS EMPTY ! CANT FIND MINIMUM !"<<endl;
+                    break;
+                }
+                CNode* min=b.Findmin(root);
+                cout<<"\n|-----YOUNGEST CUSTOMER-----|"<<endl;
+                cout<<"Title\t\tName\t\tAge\t\tPrice\n";
+                min->Displaydata();
+                break;
+            }
+            case 5:
+            {
+                CNode* root=b.Getroot();
+                if(root==NULL)
+                {
+                    cout<<"THE TREE IS EMPTY ! CANT FIND MAXIMUM !"<<endl;
+                    break;
+                }
+                CNode* max=b.Findmax(root);
+                cout<<"\n|-----OLDEST CUSTOMER-----|"<<endl;
+                cout<<"Title\t\tName\t\tAge\t\tPrice\n";
+                max->Displaydata();
+                break;
+            }
+            case 6:
+            {
+                int x;
+                CNode* root=b.Getroot();
+                if(root==NULL)
+                {
+                    cout<<"THE TREE IS EMPTY ! CANT SEARCH !"<<endl;
+                    break;
+                }
+                cout<<"Enter the Age to search:"<<endl;
+                cin>>x;
+                CNode* find=b.Search(root,x);
+                if(find==NULL)
+                    cout<<"The Age not found !"<<endl;
+                else
+                {
+                    cout<<"\n|-----CUSTOMER FOUND-----|"<<endl;
+                    cout<<"Title\t\tName\t\tAge\t\tPrice\n";
+                    find->Displaydata();
+                }
+                break;
+            }
+            case 7:
+            {
+                CNode* root=b.Getroot();
+                if(root==NULL)
+                {
+                    cout<<"THE TREE IS EMPTY ! CANT DO PreORDER TRAVERSAL !"<<endl;
+                    break;
+                }
+                cout<<"PreOrder Traversal\n";
+                cout<<"Title\t\tName\t\tAge\t\tPrice\n";
+                cout<<"=================================\n";
+                b.Preorder(root);
+                cout<<"\n";
+                break;
+            }
+            case 8:
+            {
+                CNode* root=b.Getroot();
+                if(root==NULL)
+                {
+                    cout<<"THE TREE IS EMPTY ! CANT DO PostORDER TRAVERSAL !"<<endl;
+                    break;
+                }
+                cout<<"PostOrder Traversal\n";
+                cout<<"Title\t\tName\t\tAge\t\tPrice\n";
+                cout<<"================================\n";
+                b.Postorder(root);
+                cout<<"\n";
+                break;
+            }
+            case 9:
+            {
+                int x;
+                cout<<"Enter the Age to delete:"<<endl;
+                cin>>x;
+                CNode* root = b.Getroot();
+                if(root == NULL)
+                {
+                    cout<<"THE TREE IS EMPTY ! CANT DELETE !"<<endl;
+                    break;
+                }
+                bool status = false;
+                root = b.Deleteelt(root, x, status);
+                b.Setroot(root);   // update root after deletion
+                if(status)
+                    cout<<"Customer with Age "<<x<<" deleted successfully!\n";
+                else
+                    cout<<"The Age "<<x<<" not found. Deletion failed!\n";
+                break;
+            }
+            case 10:
+            {
+                CNode* root=b.Getroot();
+                if(root!=NULL)
+                {
+                    cout<<"|-----ROOT OF THE TREE-----|"<<endl;
+                    cout<<"Title\t\tName\t\tAge\t\tPrice\n";
+                    cout<<"=================================\n";
+                    root->Displaydata();
+                }
+                else
+                    cout<<"EMPTY TREE !"<<endl;
+                break;
+            }
+            case 11:
+            {
+                b.MakeEmpty();
+                break;
+            }
+            case 0:
+            {
+                cout<<"EXITING...."<<endl;
+               // b.MakeEmpty();
+                break;
+            }
+            default:
+                cout<<"INVALID CHOICE !"<<endl;
+        }
+    }while(n!=0);
+}
+
+[24bcs170@mepcolinux ex5]$cat makefile
+test.o::app.o imp.o
+	g++ -o test app.o imp.o
+
+imp.o::imp.cpp
+	g++ -c imp.cpp
+
+app.o::app.cpp
+	g++ -c app.cpp
+[24bcs170@mepcolinux ex5]$./test
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 2
+Enter Movie Title: coolie
+Enter Customer Name: rajini
+Enter Age: 73
+Enter Ticket Price: 200
+Movie Ticket inserted into BST
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 2
+Enter Movie Title: goat
+Enter Customer Name: thalapathy
+Enter Age: 51
+Enter Ticket Price: 258
+Movie Ticket inserted into BST
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 2
+Enter Movie Title: jananayagan
+Enter Customer Name: CM.Vijay
+Enter Age: 55
+Enter Ticket Price: 256
+Movie Ticket inserted into BST
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 4
+
+|-----YOUNGEST CUSTOMER-----|
+Title		Name		Age		Price
+goat		thalapathy		51		258
+
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 5
+
+|-----OLDEST CUSTOMER-----|
+Title		Name		Age		Price
+coolie		rajini		73		200
+
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 6
+Enter the Age to search:
+56
+The Age not found !
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 3
+InOrder Traversal
+Title		Name		Age		Price
+==================================
+goat		thalapathy		51		258
+
+jananayagan		CM.Vijay		55		256
+
+coolie		rajini		73		200
+
+
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 7
+PreOrder Traversal
+Title		Name		Age		Price
+=================================
+coolie		rajini		73		200
+
+goat		thalapathy		51		258
+
+jananayagan		CM.Vijay		55		256
+
+
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 8
+PostOrder Traversal
+Title		Name		Age		Price
+================================
+jananayagan		CM.Vijay		55		256
+
+goat		thalapathy		51		258
+
+coolie		rajini		73		200
+
+
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 10
+|-----ROOT OF THE TREE-----|
+Title		Name		Age		Price
+=================================
+coolie		rajini		73		200
+
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 9
+Enter the Age to delete:
+59
+The Age 59 not found. Deletion failed!
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 10
+|-----ROOT OF THE TREE-----|
+Title		Name		Age		Price
+=================================
+coolie		rajini		73		200
+
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 55
+INVALID CHOICE !
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 1
+Not empty tree !
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 11
+The BST is  completely empty!
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 1
+Empty Tree !
+1.Isempty
+2. Insert Movie
+3. InOrder
+4.Findmin
+5.Findmax
+6.Search
+7.Preorder
+8.Postorder
+9.Delete
+10.Getroot
+11.MakeEmpty
+0.Exit 
+Enter your choice: 0
+EXITING....
+[24bcs170@mepcolinux ex5]$exit
+exit
+
