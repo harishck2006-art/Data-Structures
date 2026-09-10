@@ -1,0 +1,732 @@
+Script started on Tue Oct 14 08:42:14 2025
+[?1034h[24bcs170@mepcolinux ex6]$cat header.h
+#ifndef HEADER_H
+#define HEADER_H
+
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+class CNode;
+class CAVL;
+
+// ===== Movie Class =====
+class CMovie
+{
+    friend class CNode;
+    friend class CAVL;
+
+private:
+    string title;   // Movie title
+    string name;    // Customer name
+    int age;        // Customer age (used as AVL key)
+    double price;   // Ticket price
+
+public:
+    CMovie();
+    CMovie(string t, string n, int a, double p);
+    CMovie(const CMovie &other);
+    ~CMovie();
+
+    void display();
+};
+
+// ===== Node Class =====
+class CNode
+{
+    friend class CAVL;
+    friend class CMovie;
+
+private:
+    CMovie data;
+    CNode* left;
+    CNode* right;
+    int height;
+
+public:
+    CNode();
+    CNode(const CMovie &m);
+    ~CNode();
+
+    void displayNode();
+};
+
+// ===== AVL Class =====
+class CAVL
+{
+private:
+    CNode* root;
+
+    int getHeight(CNode* node);
+    int getBF(CNode* node);
+
+    // Rotations
+    CNode* LLRotate(CNode* k3);
+    CNode* RRRotate(CNode* k3);
+    CNode* LRRotate(CNode* k3);
+    CNode* RLRotate(CNode* k3);
+
+public:
+    CAVL();
+    ~CAVL();
+
+    int isEmpty();
+    CNode* insertNode(CNode* node, CNode* newNode);
+    int search(int age);
+    CNode* findMax(CNode* temp);
+    CNode* findMin(CNode* temp);
+    CNode* deleteNode(CNode* root, int age);
+
+    void inOrder(CNode* temp);
+    void preOrder(CNode* temp);
+    void postOrder(CNode* temp);
+
+    CNode* getRoot();
+    void setRoot(CNode* r); // Added to fix segmentation fault
+};
+
+#endif
+
+[24bcs170@mepcolinux ex6]$cat imp.cpp
+#include "header.h"
+
+// ===== CMovie =====
+CMovie::CMovie()
+{
+    title = "";
+    name = "";
+    age = 0;
+    price = 0.0;
+}
+
+CMovie::CMovie(string t, string n, int a, double p)
+{
+    title = t;
+    name = n;
+    age = a;
+    price = p;
+}
+
+CMovie::CMovie(const CMovie &other)
+{
+    title = other.title;
+    name = other.name;
+    age = other.age;
+    price = other.price;
+}
+
+CMovie::~CMovie() {}
+
+void CMovie::display()
+{
+    cout << title << "\t\t" << name << "\t\t" << age << "\t\t" << price << endl;
+}
+
+// ===== CNode =====
+CNode::CNode()
+{
+    left = NULL;
+    right = NULL;
+    height = 1;
+}
+
+CNode::CNode(const CMovie &m)
+{
+    data = m;
+    left = NULL;
+    right = NULL;
+    height = 1;
+}
+
+CNode::~CNode() {}
+
+void CNode::displayNode()
+{
+    data.display();
+}
+
+// ===== CAVL =====
+CAVL::CAVL() : root(NULL) {}
+
+CAVL::~CAVL()
+{
+    root = NULL;
+}
+
+int CAVL::isEmpty()
+{
+    return root == NULL;
+}
+
+int CAVL::getHeight(CNode* node)
+{
+    if (node == NULL) return 0;
+    return node->height;
+}
+
+int CAVL::getBF(CNode* node)
+{
+    if (node == NULL) return 0;
+    return getHeight(node->left) - getHeight(node->right);
+}
+
+// ===== Rotations =====
+CNode* CAVL::LLRotate(CNode* k3)
+{
+    cout << "[Rotation: LL]\n";
+    CNode* k2 = k3->left;
+    CNode* temp = k2->right;
+
+    k2->right = k3;
+    k3->left = temp;
+
+    k3->height = max(getHeight(k3->left), getHeight(k3->right)) + 1;
+    k2->height = max(getHeight(k2->left), getHeight(k2->right)) + 1;
+
+    return k2;
+}
+
+CNode* CAVL::RRRotate(CNode* k3)
+{
+    cout << "[Rotation: RR]\n";
+    CNode* k2 = k3->right;
+    CNode* temp = k2->left;
+
+    k2->left = k3;
+    k3->right = temp;
+
+    k3->height = max(getHeight(k3->left), getHeight(k3->right)) + 1;
+    k2->height = max(getHeight(k2->left), getHeight(k2->right)) + 1;
+
+    return k2;
+}
+
+CNode* CAVL::LRRotate(CNode* k3)
+{
+    cout << "[Rotation: LR]\n";
+    k3->left = RRRotate(k3->left);
+    return LLRotate(k3);
+}
+
+CNode* CAVL::RLRotate(CNode* k3)
+{
+    cout << "[Rotation: RL]\n";
+    k3->right = LLRotate(k3->right);
+    return RRRotate(k3);
+}
+
+// ===== Insert Node =====
+CNode* CAVL::insertNode(CNode* node, CNode* newNode)
+{
+    if (node == NULL)
+        return newNode;
+
+    if (newNode->data.age < node->data.age)
+        node->left = insertNode(node->left, newNode);
+    else if (newNode->data.age > node->data.age)
+        node->right = insertNode(node->right, newNode);
+    else
+        return node; // duplicate age not allowed
+
+    node->height = 1 + max(getHeight(node->left), getHeight(node->right));
+    int balance = getBF(node);
+
+    // LL
+    if (balance > 1 && newNode->data.age < node->left->data.age)
+        return LLRotate(node);
+
+    // RR
+    if (balance < -1 && newNode->data.age > node->right->data.age)
+        return RRRotate(node);
+
+    // LR
+    if (balance > 1 && newNode->data.age > node->left->data.age)
+        return LRRotate(node);
+
+    // RL
+    if (balance < -1 && newNode->data.age < node->right->data.age)
+        return RLRotate(node);
+
+    return node;
+}
+
+// ===== Search =====
+int CAVL::search(int age)
+{
+    CNode* temp = root;
+    while (temp != NULL)
+    {
+        if (age == temp->data.age)
+        {
+            temp->displayNode();
+            return 1;
+        }
+        else if (age < temp->data.age)
+            temp = temp->left;
+        else
+            temp = temp->right;
+    }
+    return -1;
+}
+
+// ===== Find Max/Min =====
+CNode* CAVL::findMax(CNode* temp)
+{
+    if (temp == NULL) return NULL;
+    while (temp->right != NULL) temp = temp->right;
+    return temp;
+}
+
+CNode* CAVL::findMin(CNode* temp)
+{
+    if (temp == NULL) return NULL;
+    while (temp->left != NULL) temp = temp->left;
+    return temp;
+}
+
+// ===== Delete Node =====
+CNode* CAVL::deleteNode(CNode* root, int age)
+{
+    if (root == NULL)
+        return root;
+
+    if (age < root->data.age)
+        root->left = deleteNode(root->left, age);
+    else if (age > root->data.age)
+        root->right = deleteNode(root->right, age);
+    else
+    {
+        if (root->left == NULL || root->right == NULL)
+        {
+            CNode* temp = root->left ? root->left : root->right;
+            cout << "Deleted: ";
+            root->displayNode();
+            delete root;
+            return temp;
+        }
+
+        CNode* temp = findMin(root->right);
+        root->data = temp->data;
+        root->right = deleteNode(root->right, temp->data.age);
+    }
+
+    if (root == NULL)
+        return root;
+
+    root->height = 1 + max(getHeight(root->left), getHeight(root->right));
+    int balance = getBF(root);
+
+    if (balance > 1 && getBF(root->left) >= 0)
+        return LLRotate(root);
+
+    if (balance > 1 && getBF(root->left) < 0)
+        return LRRotate(root);
+
+    if (balance < -1 && getBF(root->right) <= 0)
+        return RRRotate(root);
+
+    if (balance < -1 && getBF(root->right) > 0)
+        return RLRotate(root);
+
+    return root;
+}
+
+// ===== Traversals =====
+void CAVL::inOrder(CNode* temp)
+{
+    if (temp != NULL)
+    {
+        inOrder(temp->left);
+        temp->data.display();
+        inOrder(temp->right);
+    }
+}
+
+void CAVL::preOrder(CNode* temp)
+{
+    if (temp != NULL)
+    {
+        temp->data.display();
+        preOrder(temp->left);
+        preOrder(temp->right);
+    }
+}
+
+void CAVL::postOrder(CNode* temp)
+{
+    if (temp != NULL)
+    {
+        postOrder(temp->left);
+        postOrder(temp->right);
+        temp->data.display();
+    }
+}
+
+CNode* CAVL::getRoot()
+{
+    return root;
+}
+
+void CAVL::setRoot(CNode* r)
+{
+    root = r;
+}
+
+[24bcs170@mepcolinux ex6]$cat app.cpp
+#include "header.h"
+
+int main()
+{
+    CAVL tree;
+    int choice;
+
+    do
+    {
+        cout << "\n====== Movie AVL Tree Menu ======\n";
+        cout << "1. Insert Movie\n";
+        cout << "2. Delete Movie by Age\n";
+        cout << "3. Search Movie by Age\n";
+        cout << "4. Display InOrder\n";
+        cout << "5. Display PreOrder\n";
+        cout << "6. Display PostOrder\n";
+        cout << "7. Find Movie with Minimum Age\n";
+        cout << "8. Find Movie with Maximum Age\n";
+        cout << "9. Exit\n";
+        cout << "Enter your choice: ";
+        if (!(cin >> choice))
+        {
+            cout << "Invalid input. Exiting.\n";
+            return 0;
+        }
+
+        switch(choice)
+        {
+            case 1:
+            {
+                string title, name;
+                int age;
+                double price;
+                cout << "Enter Movie Title: ";
+                cin >> title;
+                cout << "Enter Customer Name: ";
+                cin >> name;
+                cout << "Enter Age: ";
+                cin >> age;
+                cout << "Enter Ticket Price: ";
+                cin >> price;
+
+                CMovie movie(title, name, age, price);
+                CNode* newNode = new CNode(movie);
+                tree.setRoot(tree.insertNode(tree.getRoot(), newNode)); // fixed line
+                cout << "Movie Inserted Successfully.\n";
+                break;
+            }
+
+            case 2:
+            {
+                int age;
+                cout << "Enter Age to delete: ";
+                cin >> age;
+                cout << "Title\t\tName\t\tAge\t\tPrice\n";
+                tree.setRoot(tree.deleteNode(tree.getRoot(), age)); // fixed line
+                cout << "Deleted Successfully.\n";
+                break;
+            }
+
+            case 3:
+            {
+                int age;
+                cout << "Enter Age to search: ";
+                cin >> age;
+                cout << "Title\t\tName\t\tAge\t\tPrice\n";
+                int result = tree.search(age);
+                if(result == 1)
+                    cout << "Movie found.\n";
+                else
+                    cout << "Movie with Age " << age << " not found!\n";
+                break;
+            }
+
+            case 4:
+            {
+                cout << "InOrder Traversal:\n";
+                cout << "Title\t\tName\t\tAge\t\tPrice\n";
+                tree.inOrder(tree.getRoot());
+                break;
+            }
+
+            case 5:
+            {
+                cout << "PreOrder Traversal:\n";
+                cout << "Title\t\tName\t\tAge\t\tPrice\n";
+                tree.preOrder(tree.getRoot());
+                break;
+            }
+
+            case 6:
+            {
+                cout << "PostOrder Traversal:\n";
+                cout << "Title\t\tName\t\tAge\t\tPrice\n";
+                tree.postOrder(tree.getRoot());
+                break;
+            }
+
+            case 7:
+            {
+                CNode* result = tree.findMin(tree.getRoot());
+                if(result == NULL)
+                    cout << "Tree is Empty\n";
+                else
+                {
+                    cout << "Movie with Minimum Age:\n";
+                    cout << "Title\t\tName\t\tAge\t\tPrice\n";
+                    result->displayNode();
+                }
+                break;
+            }
+
+            case 8:
+            {
+                CNode* result = tree.findMax(tree.getRoot());
+                if(result == NULL)
+                    cout << "Tree is Empty\n";
+                else
+                {
+                    cout << "Movie with Maximum Age:\n";
+                    cout << "Title\t\tName\t\tAge\t\tPrice\n";
+                    result->displayNode();
+                }
+                break;
+            }
+
+            case 9:
+                cout << "Exiting...\n";
+                return 0;
+
+            default:
+                cout << "Invalid choice! Try again.\n";
+        }
+
+    } while(choice != 9);
+
+    return 0;
+}
+
+[24bcs170@mepcolinux ex6]$cat makefile
+exe: imp.o app.o
+	c++ imp.o app.o -o exe
+imp.o: imp.cpp header.h
+	c++ imp.cpp -c
+app.o: app.cpp header.h
+	c++ app.cpp -c
+[24bcs170@mepcolinux ex6]$./exe
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 1
+Enter Movie Title: coolie
+Enter Customer Name: harish
+Enter Age: 19
+Enter Ticket Price: 200
+Movie Inserted Successfully.
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 2
+Enter Age to delete: 0
+Title		Name		Age		Price
+Deleted Successfully.
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 1
+Enter Movie Title: beast
+Enter Customer Name: vijay
+Enter Age: 52
+Enter Ticket Price: 300
+Movie Inserted Successfully.
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 1
+Enter Movie Title: basha
+Enter Customer Name: rajini
+Enter Age: 78
+Enter Ticket Price: 100
+[Rotation: RR]
+Movie Inserted Successfully.
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 3
+Enter Age to search: 58
+Title		Name		Age		Price
+Movie with Age 58 not found!
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 3
+Enter Age to search: 78
+Title		Name		Age		Price
+basha		rajini		78		100
+Movie found.
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 4
+InOrder Traversal:
+Title		Name		Age		Price
+coolie		harish		19		200
+beast		vijay		52		300
+basha		rajini		78		100
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 5
+PreOrder Traversal:
+Title		Name		Age		Price
+beast		vijay		52		300
+coolie		harish		19		200
+basha		rajini		78		100
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 6
+PostOrder Traversal:
+Title		Name		Age		Price
+coolie		harish		19		200
+basha		rajini		78		100
+beast		vijay		52		300
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 7
+Movie with Minimum Age:
+Title		Name		Age		Price
+coolie		harish		19		200
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 8
+Movie with Maximum Age:
+Title		Name		Age		Price
+basha		rajini		78		100
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 2
+Enter Age to delete: 19
+Title		Name		Age		Price
+Deleted: coolie		harish		19		200
+Deleted Successfully.
+
+====== Movie AVL Tree Menu ======
+1. Insert Movie
+2. Delete Movie by Age
+3. Search Movie by Age
+4. Display InOrder
+5. Display PreOrder
+6. Display PostOrder
+7. Find Movie with Minimum Age
+8. Find Movie with Maximum Age
+9. Exit
+Enter your choice: 9
+Exiting...
+[24bcs170@mepcolinux ex6]$exit
+exit
