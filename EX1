@@ -1,0 +1,660 @@
+#include<iostream>
+using namespace std;
+class CAList
+{
+    int *arr;
+    int capacity;
+    int size;
+  public:
+    CAList();
+    CAList(int *, int, int);
+    CAList(const CAList &);
+    ~CAList();
+
+    int isFull();
+    int isEmpty();
+    void display();
+    int searchElement(int);
+    void makeListEmpty();
+    void updateEle(int,int);
+
+    void insertAtFirst(int);
+    void insertAtlast(int);
+    int insertByPosition(int, int);
+    int insertBeforeElement(int, int);
+    int insertAfterElement(int, int);
+    void insertAtMiddle(int);
+
+    int deleteAtFirst();
+    int deleteAtLast();
+    int deleteByPosition(int);
+    int deleteBeforeElement(int);
+    int deleteAfterElement(int);
+    int deleteAtMiddle();
+
+    void displayReverse();
+};
+[24bcs170@mepcolinux ex1]$cat imp.cpp
+#include"head.h"
+
+CAList::CAList()
+{
+    capacity = 10;
+    size = 0;
+    arr = new int[capacity];
+}
+
+CAList::CAList(int *a, int c, int s)
+{
+    capacity = c;
+    size = s;
+    arr = new int[capacity];
+    for (int i = 0; i < size; i++)
+        arr[i] = a[i];
+}
+
+CAList::CAList(const CAList &obj)
+{
+    capacity = obj.capacity;
+    size = obj.size;
+    arr = new int[capacity];
+    for (int i = 0; i < size; i++)
+        arr[i] = obj.arr[i];
+}
+
+CAList::~CAList()
+{
+    delete[] arr;
+}
+
+int CAList::isFull()
+{
+    return size == capacity;
+}
+
+int CAList::isEmpty()
+{
+    return size == 0;
+}
+
+void CAList::display()
+{
+    if (isEmpty())
+        cout << "List is empty." << endl;
+    else {
+        cout << "Elements in List: ";
+        for (int i = 0; i < size; i++)
+            cout << arr[i] << " ";
+        cout << endl;
+    }
+}
+
+int CAList::searchElement(int ele)
+{
+    for (int i = 0; i < size; i++)
+        if (arr[i] == ele) return i;
+    return -1;
+}
+
+void CAList::insertAtFirst(int ele)
+{
+    for (int i = size - 1; i >= 0; i--)
+        arr[i + 1] = arr[i];
+    arr[0] = ele;
+    size++;
+}
+
+void CAList::insertAtlast(int ele)
+{
+    arr[size++] = ele;
+}
+
+int CAList::insertByPosition(int pos, int ele)
+{
+    if (pos <= 0 || pos > size + 1) return 0;
+    for (int i = size - 1; i >= pos - 1; i--)
+        arr[i + 1] = arr[i];
+    arr[pos - 1] = ele;
+    size++;
+    return 1;
+}
+
+int CAList::insertBeforeElement(int a, int ele)
+{
+    int index = searchElement(ele);
+    if (index != -1) {
+        for (int i = size - 1; i >= index; i--)
+            arr[i + 1] = arr[i];
+        arr[index] = a;
+        size++;
+        return 1;
+    }
+    return 0;
+}
+
+void CAList::updateEle(int e1, int e)
+{
+   int index = searchElement(e1);
+   arr[index] = e;
+}
+
+int CAList::insertAfterElement(int a, int ele)
+{
+    int index = searchElement(ele);
+    if (index != -1) {
+        for (int i = size - 1; i > index; i--)
+            arr[i + 1] = arr[i];
+        arr[index + 1] = a;
+        size++;
+        return 1;
+    }
+    return 0;
+}
+
+int CAList::deleteAtFirst()
+{
+    if (isEmpty()) return 0;
+    for (int i = 0; i < size - 1; i++)
+        arr[i] = arr[i + 1];
+    size--;
+    return 1;
+}
+
+int CAList::deleteAtLast()
+{
+    if (isEmpty()) return 0;
+    size--;
+    return 1;
+}
+
+int CAList::deleteByPosition(int pos)
+{
+    if (isEmpty() || pos <= 0 || pos > size) return 0;
+    for (int i = pos - 1; i < size - 1; i++)
+        arr[i] = arr[i + 1];
+    size--;
+    return 1;
+}
+
+int CAList::deleteBeforeElement(int ele)
+{
+    int index = searchElement(ele);
+    if (index <= 0) return 0;
+    for (int i = index - 1; i < size - 1; i++)
+        arr[i] = arr[i + 1];
+    size--;
+    return 1;
+}
+
+int CAList::deleteAfterElement(int ele)
+{
+    int index = searchElement(ele);
+    if (index == -1 || index >= size - 1) return 0;
+    for (int i = index + 1; i < size - 1; i++)
+        arr[i] = arr[i + 1];
+    size--;
+    return 1;
+}
+
+void CAList::insertAtMiddle(int ele)
+{
+   int index;
+   if(size%2==0)
+      index=((size/2)+1)-1;
+   else
+      index=((size+1)/2)-1;
+   for (int i = size - 1; i >= index; i--)
+      arr[i + 1] = arr[i];
+   arr[index] = ele;
+   size++;
+}
+
+int CAList::deleteAtMiddle()
+{
+   int index;
+   if(size==1)
+   {
+      return deleteAtFirst();
+   }
+   else
+   {
+      if(size%2==0)
+         index=((size/2)+1)-1;
+      else
+         index=((size+1)/2)-1;
+      if (size<=1) return 0;
+      for (int i =index ; i < size - 1; i++)
+         arr[i] = arr[i + 1];
+      size--;
+      return 1;
+   }
+}
+
+void CAList::makeListEmpty()
+{
+   while(!isEmpty())
+      deleteAtFirst();
+}
+
+void CAList::displayReverse()
+{
+   if(isEmpty())
+   {
+     cout<<"the list is empty"<<endl; 
+   }
+   else
+   {
+      for(int i=size-1 ; i>=0;i--)
+      {
+	 cout<<arr[i]<<"   ";
+      }
+      cout<<endl;
+   }
+}
+[24bcs170@mepcolinux ex1]$cat app.cpp
+#include "head.h"
+int main()
+{
+    int choice, ele, pos, eleb, elea, capacity, size=0;
+    cout << "Enter the capacity: ";
+    cin >> capacity;
+    int *arr = new int[capacity];
+    while (true)
+    {
+        cout << "Enter the size: ";
+        cin >> size;
+        if ((size <= capacity) && (size !=0))
+        {
+            cout << "Enter " << size << " elements:\n";
+            for (int i = 0; i < size; i++)
+                cin >> arr[i];
+            break;
+        }
+        if (size == 0)
+            break;
+        cout << "Invalid size. Please enter a size between 1 and " << capacity << ".\n";
+    }
+    CAList list(arr, capacity, size);
+    delete[] arr;
+
+        cout << "\n------Menu------\n";
+        cout << "1. Check if the list is Full\n";
+        cout << "2. Check if the list is Empty\n";
+        cout << "3. Display List\n";
+        cout << "4. Search Element\n";
+        cout << "5. Insert at First\n";
+        cout << "6. Insert at Last\n";
+        cout << "7. Insert by Position\n";
+        cout << "8. Insert Before Element\n";
+        cout << "9. Insert After Element\n";
+        cout << "10. Delete at First\n";
+        cout << "11. Delete at Last\n";
+        cout << "12. Delete by Position\n";
+        cout << "13. Delete Before Element\n";
+        cout << "14. Delete After Element\n";
+        cout << "15. Update Element\n";
+        cout << "16. Make List Empty\n";
+        cout << "17. Insert at Middle\n";
+        cout << "18. Delete at Middle\n";
+	cout << "19. Reverse list\n";
+        cout << "0. Exit\n";
+    while (true)
+    {
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+            case 1:
+                if (list.isFull())
+                    cout << "List is full.\n";
+                else
+                    cout << "List is not full. Space available: " << (capacity - size) << endl;
+                break;
+            case 2:
+                if (list.isEmpty())
+                    cout << "List is empty.\n";
+                else
+                    cout << "List is not empty. Current size: " << size << endl;
+                break;
+            case 3:
+                list.display();
+                break;
+            case 4:
+                cout << "Enter search element: ";
+                cin >> ele;
+                if (list.searchElement(ele) != -1)
+                    cout << "Element found at index " << list.searchElement(ele) << endl;
+                else
+                    cout << "Element not found.\n";
+                break;
+            case 5:
+                if (!list.isFull())
+                {
+                    cout << "Enter element to be inserted at first: ";
+                    cin >> ele;
+                    list.insertAtFirst(ele);
+                    cout << "Element inserted at first successfully.\n";
+                    list.display();
+                }
+                else
+                    cout << "List is full. Cannot insert at first.\n";
+                break;
+            case 6:
+                if (!list.isFull())
+                {
+                    cout << "Enter element to be inserted at last: ";
+                    cin >> ele;
+                    list.insertAtlast(ele);
+                    cout << "Element inserted at last successfully.\n";
+                    list.display();
+                }
+                else
+                    cout << "List is full. Cannot insert at last.\n";
+                break;
+            case 7:
+                if (!list.isFull())
+                {
+                    cout << "Enter element and position: ";
+                    cin >> ele >> pos;
+                    if(list.insertByPosition(pos, ele)==0)
+                        cout << "Invalid position. Cannot insert at position " << pos << ".\n";
+                    else
+                    {
+                        cout << "Element inserted at position " << pos << " successfully.\n";
+                        list.display();
+                    }
+                }
+                else
+                    cout << "List is full. Cannot insert at position.\n";
+                break;
+            case 8:
+                if (!list.isFull())
+                {
+                    cout << "Enter element to insert and another element before which to insert it: ";
+                    cin >> ele >> eleb;
+                    if(list.insertBeforeElement(ele, eleb)==0)
+                        cout << "Element not found. Cannot insert before " << eleb << ".\n";
+                    else
+                    {
+                        cout << "Element inserted before " << eleb << " successfully.\n";
+                        list.display();
+                    }
+                }
+                else
+                    cout << "List is full. Cannot insert before element.\n";
+                break;
+            case 9:
+                if (!list.isFull())
+                {
+                    cout << "Enter element to insert and another element after which to insert it: ";
+                    cin >> ele >> elea;
+                    if(list.insertAfterElement(ele, elea)==0)
+                        cout << "Element not found. Cannot insert after " << elea << ".\n";
+                    else
+                    {
+                        cout << "Element inserted after " << elea << " successfully.\n";
+                        list.display();
+                    }
+                }
+                else
+                    cout << "List is full. Cannot insert after element.\n";
+                break;
+            case 10:
+                if(list.deleteAtFirst()==0)
+                    cout << "List is empty. Cannot delete at first.\n";
+                else
+                {
+                    cout << "element in first is deleted.\n";
+                    list.display();
+                }
+                break;
+            case 11:
+                if(list.deleteAtLast()==0)
+                    cout << "List is empty so not to delete at last\n";
+                else
+                {
+                    cout << "element in last is deleted.\n";
+                    list.display();
+                }
+                break;
+            case 12:
+                cout << "Enter position to delete: ";
+                cin >> pos;
+                if(list.deleteByPosition(pos)==0)
+                    cout << "List is either empty or position is invalid. " << pos << ".\n";
+                else
+                {
+                    cout << "Element deleted at position " << pos << " successfully.\n";
+                    list.display();
+                }
+                break;
+            case 13:
+                cout << "Enter an element to delete the one before it: ";
+                cin >> ele;
+                if(list.deleteBeforeElement(ele)==0)
+                    cout << "List is empty or element not found. so not to delete before " << ele << ".\n";
+                else
+                {
+                    cout << "Element deleted before " << ele << " successfully.\n";
+                    list.display();
+                }
+                break;
+            case 14:
+                cout << "Enter an element to delete the one after it: ";
+                cin >> ele;
+                if(list.deleteAfterElement(ele)==0)
+                    cout << "List is empty or element not found. Cannot delete after " << ele << ".\n";
+                else
+                {
+                    cout << "Element deleted after " << ele << " successfully.\n";
+                    list.display();
+                }
+                break;
+            case 15:
+                if(list.isEmpty())
+                   cout << "List is empty no element to replace";
+                else
+                {
+                   int ele1;
+                   cout << "Enter the element to be replace: ";
+                   cin >> ele1;
+                   int index = list.searchElement(ele1);
+                   if(index==-1)
+                      cout << "Element not to be exist in the list:\n";
+                   else
+                   {
+                      cout << "Enter the value to be updated: ";
+                      cin >> ele;
+                      list.updateEle(ele1,ele);
+                      cout << "replaced element\n";
+                      list.display();
+                   }
+                }
+                break;
+            case 16:
+                if(!list.isEmpty())
+                {
+                   list.makeListEmpty();
+                   cout << "List Emptied\n";
+                }
+                else
+                   cout << "List is already Empty\n";
+                break;
+            case 17:
+                if(!list.isFull())
+                {
+                   cout << "Enter element to insert at middle: ";
+                   cin >> ele;
+                   list.insertAtMiddle(ele);
+                   cout << "Element sucessfully inserted\n";
+                   list.display();
+                }
+                else
+                   cout << "List is Full. no element is to be inserted\n";
+                break;
+            case 18:
+                if(list.deleteAtMiddle())
+                {
+                   cout << "element sucessfully deleted at middle.\n";
+                   list.display();
+                }
+                break;
+	    case 19:
+		{
+		   list.displayReverse();
+		   cout<<"THE LIST IS REVERSED !\n"<<endl;
+		   break;
+                }
+            case 0:
+                cout << "exit the  program\n";
+                return 0;
+            default:
+                cout << "Invalid input\n";
+        }
+    }
+}
+[24bcs170@mepcolinux ex1]$cat app.cpp
+exe: imp.o app.o
+	c++ imp.o app.o -o exe
+imp.o: imp.cpp head.h
+	c++ imp.cpp -c
+app.o: app.cpp head.h
+	c++ app.cpp -c
+[24bcs170@mepcolinux ex1]$./exe
+Enter the capacity: 10
+Enter the size: 9
+Enter 9 elements:
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+------Menu------
+1. Check if the list is Full
+2. Check if the list is Empty
+3. Display List
+4. Search Element
+5. Insert at First
+6. Insert at Last
+7. Insert by Position
+8. Insert Before Element
+9. Insert After Element
+10. Delete at First
+11. Delete at Last
+12. Delete by Position
+13. Delete Before Element
+14. Delete After Element
+15. Update Element
+16. Make List Empty
+17. Insert at Middle
+18. Delete at Middle
+19. Reverse list
+0. Exit
+Enter your choice: 1
+List is not full. Space available: 1
+Enter your choice: 2
+List is not empty. Current size: 9
+Enter your choice: 3
+Elements in List: 1 2 3 4 5 6 7 8 9 
+Enter your choice: 4
+Enter search element: 8
+Element found at index 7
+Enter your choice: 5
+Enter element to be inserted at first: 4
+Element inserted at first successfully.
+Elements in List: 4 1 2 3 4 5 6 7 8 9 
+Enter your choice: 11
+element in last is deleted.
+Elements in List: 4 1 2 3 4 5 6 7 8 
+Enter your choice: 6
+Enter element to be inserted at last: 9
+Element inserted at last successfully.
+Elements in List: 4 1 2 3 4 5 6 7 8 9 
+Enter your choice: 6
+List is full. Cannot insert at last.
+Enter your choice: 5
+List is full. Cannot insert at first.
+Enter your choice: 7
+List is full. Cannot insert at position.
+Enter your choice: 10
+element in first is deleted.
+Elements in List: 1 2 3 4 5 6 7 8 9 
+Enter your choice: 11
+element in last is deleted.
+Elements in List: 1 2 3 4 5 6 7 8 
+Enter your choice: 7
+Enter element and position: 2 3
+Element inserted at position 3 successfully.
+Elements in List: 1 2 2 3 4 5 6 7 8 
+Enter your choice: 8
+Enter element to insert and another element before which to insert it: 4 7
+Element inserted before 7 successfully.
+Elements in List: 1 2 2 3 4 5 6 4 7 8 
+Enter your choice: 9
+List is full. Cannot insert after element.
+Enter your choice: 10
+element in first is deleted.
+Elements in List: 2 2 3 4 5 6 4 7 8 
+Enter your choice: 11
+element in last is deleted.
+Elements in List: 2 2 3 4 5 6 4 7 
+Enter your choice: 9
+Enter element to insert and another element after which to insert it: 1 2
+Element inserted after 2 successfully.
+Elements in List: 2 1 2 3 4 5 6 4 7 
+Enter your choice: 12
+Enter position to delete: 2
+Element deleted at position 2 successfully.
+Elements in List: 2 2 3 4 5 6 4 7 
+Enter your choice: 13
+Enter an element to delete the one before it: 2
+List is empty or element not found. so not to delete before 2.
+Enter your choice: 12
+Enter position to delete: 4
+Element deleted at position 4 successfully.
+Elements in List: 2 2 3 5 6 4 7 
+Enter your choice: 13
+Enter an element to delete the one before it: 2
+List is empty or element not found. so not to delete before 2.
+Enter your choice: 13
+Enter an element to delete the one before it: 5
+Element deleted before 5 successfully.
+Elements in List: 2 2 5 6 4 7 
+Enter your choice: 14
+Enter an element to delete the one after it: 2
+Element deleted after 2 successfully.
+Elements in List: 2 5 6 4 7 
+Enter your choice: 15
+Enter the element to be replace: 7
+Enter the value to be updated: 8
+replaced element
+Elements in List: 2 5 6 4 8 
+Enter your choice: 16
+List Emptied
+Enter your choice: 17
+Enter element to insert at middle: 2
+Element sucessfully inserted
+Elements in List: 2 
+Enter your choice: 18
+element sucessfully deleted at middle.
+List is empty.
+Enter your choice: 5
+Enter element to be inserted at first: 1
+Element inserted at first successfully.
+Elements in List: 1 
+Enter your choice: 6
+Enter element to be inserted at last: 6 3
+Element inserted at last successfully.
+Elements in List: 1 6 
+Enter your choice: Elements in List: 1 6 
+Enter your choice: 19
+6   1   
+THE LIST IS REVERSED !
+
+Enter your choice: 0
