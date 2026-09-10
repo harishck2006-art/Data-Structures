@@ -1,0 +1,832 @@
+[?1034h[24bcs170@mepcolinux ex3a]$cat header.h
+#include <iostream>
+#include <string>
+using namespace std;
+
+class CMovie
+{
+    friend class CAStack;
+    public:
+        ~CMovie();
+        CMovie();
+        CMovie(string,string,int,int);
+        void displaydetails();
+        void get();
+    private:
+        string title;
+        string Name;
+        int age;
+        int price;
+};
+
+class CAStack
+{
+    public:
+        CAStack(int);
+        int push(CMovie);
+        int pop();
+        int peek();
+        int makestackempty();
+        void display();
+        int isfull();
+        int isempty();
+        int size();
+
+    private:
+        int top;
+        int capacity;
+        CMovie* stackarray;
+};
+[24bcs170@mepcolinux ex3a]$cat imp.cpp
+#include "header.h"
+
+CMovie::CMovie()
+{
+    title = "";
+    Name = "";
+    age = 0;
+    price = 0;
+}
+CMovie::CMovie(string t, string n, int a, int p)
+{
+    title=t;
+    Name=n;
+    age=a;
+    price=p;
+}
+void CMovie::displaydetails()
+{
+    cout << title;
+    cout << "\t\t\t" << Name ;
+    cout << "\t\t\t" << age ;
+    cout << "\t\t\t" << price << endl;
+}
+CMovie::~CMovie()
+{
+    title="";
+    Name="";
+    age=0;
+    price=0;
+}
+void CMovie::get()
+{
+    cout << "Enter Title: ";
+    cin >> title;
+    cout << "Enter Name: ";
+    cin >> Name;
+    cout << "Enter age: ";
+    cin >> age;
+    cout << "Enter Price: ";
+    cin >> price;
+}
+
+
+
+
+
+CAStack::CAStack(int cap)
+{
+    capacity = cap;
+    stackarray = new CMovie[capacity];
+    top = -1;
+}
+
+int CAStack :: isfull()
+{
+    if (top == capacity - 1)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+int CAStack::isempty()
+{
+    if (top == -1)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+int CAStack::peek()
+{
+    if(isempty())
+    {
+        return -1;
+    }
+    else
+    {
+        cout<<"===============================================================================================\n";
+        cout<<"Title\t\t\tName\t\t\tage\t\t\tPrice\n";
+        cout<<"===============================================================================================\n";
+        stackarray[top].displaydetails();
+        cout<<"===============================================================================================\n";
+        return 1;
+    }
+}
+int CAStack::size()
+{
+    if(isempty())
+    {
+        return -1;
+    }
+    else
+    {
+        return top+1;
+    }
+}
+void CAStack::display()
+{
+    if(isempty())
+    {
+        cout << "list is empty" << endl;
+    }
+    else
+    {
+       cout << "================================================================================================\n";
+       cout << "Title\t\t\tName\t\t\tage\t\t\tPrice\n";
+       cout << "================================================================================================\n";
+       for(int i = 0; i <= top; i++)
+       {
+           stackarray[i].displaydetails();
+       }
+       cout << "================================================================================================\n";
+
+    }
+}
+int CAStack::push(CMovie ele)
+{
+    if(isfull())
+    {
+        return -1;
+    }
+    else
+    {
+        top++;
+        stackarray[top] = ele;
+        return 1;
+    }
+}
+int CAStack::pop()
+{
+    if(isempty())
+    {
+        return -1;
+    }
+    else
+    {
+        top--;
+        return 1;
+    }
+}
+int CAStack::makestackempty()
+{
+    if(isempty())
+    {
+        return -1;
+    }
+    else
+    {
+        top = -1;
+        return 1;
+    }
+}
+[24bcs170@mepcolinux ex3a]$cat app.cpp
+#include "header.h"
+
+int main()
+{
+    CAStack stackarray(10);
+    int choice;
+    string title, Name;
+    int price,age,res;
+
+    cout << "\n--- Stack Menu ---\n";
+    cout << "1. Push\n";
+    cout << "2. Pop\n";
+    cout << "3. Peek\n";
+    cout << "4. Display Stack\n";
+    cout << "5. Make Stack Empty\n";
+    cout << "6. Check if Stack is Empty\n";
+    cout << "7. Check if Stack is Full\n";
+    cout << "8. Display Stack Size\n";
+    cout << "9. Exit\n";
+
+    while (true)
+    {
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+            case 1:
+            {
+                cout << "Enter Title: ";
+                cin >> title;
+                cout << "Enter Name: ";
+                cin >> Name;
+                cout << "Enter age: ";
+                cin >> age;
+                cout << "Enter Price: ";
+                cin >> price;
+
+                CMovie movie(title, Name, age, price);
+                res=stackarray.push(movie);
+                if (res == -1)
+                    cout << "Error: Stack is full!\n";
+                else
+                    cout << "Pushed successfully.\n";
+                break;
+            }
+            case 2:
+            {
+                if (stackarray.pop() == -1)
+                    cout << "Error: Stack is empty!\n";
+                else
+                    cout << "Popped successfully.\n";
+                break;
+            }
+            case 3:
+            {
+                int peeked = stackarray.peek();
+                if (peeked == -1)
+                    cout << "Error: Stack is empty!\n";
+                else
+                    cout << "Peeked successfully" << endl;
+                break;
+            }
+            case 4:
+            {
+                stackarray.display();
+                break;
+            }
+            case 5:
+            {
+                if(stackarray.isempty())
+                    cout << "Stack is already empty.\n";
+                else
+                {
+                    stackarray.makestackempty();
+                    cout << "Stack made empty.\n";
+                }
+                break;
+            }
+            case 6:
+            {
+                if (stackarray.isempty())
+                    cout << "Stack is empty.\n";
+                else
+                    cout << "Stack is not empty.\n";
+                break;
+            }
+            case 7:
+            {
+                if(stackarray.isfull())
+                    cout << "Stack is full.\n";
+                else
+                    cout << "Stack is not full.\n";
+                break;
+            }
+            case 8:
+            {
+                if(stackarray.isempty())
+                    cout << "Stack is empty.\n";
+                else
+                    cout << "Stack size: " << stackarray.size() << endl;
+                break;
+            }
+
+
+            case 9:
+                cout << "Exiting...\n";
+                return 0;
+        default:
+            cout << "Invalid choice! Please try again.\n";
+        }
+    }
+}
+[24bcs170@mepcolinux ex3a]$cat makefile
+exe: imp.o app.o
+	c++ imp.o app.o -o exe
+imp.o: imp.cpp header.h
+	c++ imp.cpp -c
+app.o: app.cpp header.h
+[24bcs170@mepcolinux ex3a]$./exe
+
+--- Stack Menu ---
+1. Push
+2. Pop
+3. Peek
+4. Display Stack
+5. Make Stack Empty
+6. Check if Stack is Empty
+7. Check if Stack is Full
+8. Display Stack Size
+9. Exit
+Enter choice: 1
+Enter Title: coolie
+Enter Name: harish
+Enter age: 18
+Enter Price: 200
+Pushed successfully.
+Enter choice: 1
+Enter Title: beast
+Enter Name: varshiv
+Enter age: 18
+Enter Price: 200
+Pushed successfully.
+Enter choice: 3
+===============================================================================================
+Title			Name			age			Price
+===============================================================================================
+beast			varshiv			18			200
+===============================================================================================
+Peeked successfully
+Enter choice: 4
+================================================================================================
+Title			Name			age			Price
+================================================================================================
+coolie			harish			18			200
+beast			varshiv			18			200
+================================================================================================
+Enter choice: 5
+Stack made empty.
+Enter choice: 6
+Stack is empty.
+Enter choice: 7
+Stack is not full.
+Enter choice: 8
+Stack is empty.
+Enter choice: 1
+Enter Title: coolie
+Enter Name: harish
+Enter age: 18
+Enter Price: 200
+Pushed successfully.
+Enter choice: 1
+Enter Title: devil
+Enter Name: navin
+Enter age: 20
+Enter Price: 200
+Pushed successfully.
+Enter choice: 4
+================================================================================================
+Title			Name			age			Price
+================================================================================================
+varisu			harish			18			200
+devil			navin			20			200
+================================================================================================
+Enter choice: 6
+Stack is not empty.
+Enter choice: 7
+Stack is not full.
+Enter choice: 8
+Stack size: 2
+Enter choice: 9
+Exiting...
+[24bcs170@mepcolinux ex3a]$exit
+exit
+
+Script done on Mon 25 Aug 2025 04:19:07 PM IST
+[24bcs170@mepcolinux ex3a]$cd ex3b
+[24bcs170@mepcolinux ex3b]$ls
+exe  makefile
+[24bcs170@mepcolinux ex3b]$cd ..
+[24bcs170@mepcolinux ex3a]$cd ..
+[24bcs170@mepcolinux ex3]$ls
+ex3a  ex3b
+[24bcs170@mepcolinux ex3]$cd ex3b
+[24bcs170@mepcolinux ex3b]$ls
+app.cpp  app.o  ex3b.prn  exe  head.h  imp.cpp  imp.o  makefile  makefilecd
+[24bcs170@mepcolinux ex3b]$cat ex3b.prn
+Script started on Mon 01 Sep 2025 03:25:10 PM IST
+[?1034h[24bcs170@mepcolinux ex3b]$cat head.h
+#include <iostream>
+#include <string>
+using namespace std;
+
+class CMovie
+{
+    friend class CNode;
+public:
+    ~CMovie();
+    CMovie();
+    CMovie(string, string, int, double);
+    void displaydetails();
+    void get();
+
+private:
+    string title;
+    string name;
+    int age;
+    double price;
+};
+
+class CNode
+{
+    friend class CLStack;
+public:
+    CNode();
+    CNode(CMovie*);
+    ~CNode();
+    void display();
+
+private:
+    CMovie* movie;
+    CNode* next;
+};
+
+class CLStack
+{
+public:
+    CLStack();
+    ~CLStack();
+    int push(CMovie*);
+    int pop();
+    int peek();
+    int makelistempty();
+    void display();
+    int isempty();
+    int size();
+
+private:
+    CNode* top;
+};
+[24bcs170@mepcolinux ex3b]$imp.cpp
+#include "head.h"
+
+CMovie::~CMovie()
+{
+    title = "";
+    name = "";
+    age = 0;
+    price = 0.0;
+}
+
+CMovie::CMovie() {
+    title = "";
+    name = "";
+    age = 0;
+    price = 0.0;
+}
+
+CMovie::CMovie(string t, string n, int a, double p) {
+    title = t;
+    name = n;
+    age = a;
+    price = p;
+}
+
+void CMovie::displaydetails() {
+    cout << "Title: " << title
+         << " | Name: " << name
+         << " | Age: " << age
+         << " | Price: $" << price << endl;
+}
+
+void CMovie::get()
+{
+    cout << "Enter Title: ";
+    cin >> title;
+    cout << "Enter Name: ";
+    cin >> name;
+    cout << "Enter age: ";
+    cin >> age;
+    cout << "Enter Price: ";
+    cin >> price;
+}
+
+
+CNode::CNode() {
+    movie = NULL;
+    next = NULL;
+}
+
+CNode::CNode(CMovie* m) {
+    movie = m;
+    next = NULL;
+}
+
+CNode::~CNode() {
+    delete movie;
+}
+
+void CNode::display() {
+    if (movie!= NULL) {
+        movie->displaydetails();
+    }
+}
+
+
+CLStack::CLStack() {
+    top = NULL;
+}
+
+CLStack::~CLStack() {
+    makelistempty();
+}
+
+int CLStack::push(CMovie* m) {
+    CNode* node = new CNode(m);
+    if (!node) {
+        return -1;
+    }
+    node->next = top;
+    top = node;
+    return 0;
+}
+
+int CLStack::pop() {
+    if (isempty()) {
+        return -1;
+    }
+    CNode* temp = top;
+    top = top->next;
+    delete temp;
+    return 0;
+}
+
+int CLStack::peek() {
+    if (isempty()) {
+        return -1;
+    }
+    top->display();
+    return 0;
+}
+
+int CLStack::makelistempty() {
+    while (!isempty()) {
+        pop();
+    }
+    return 0;
+}
+
+void CLStack::display() {
+    if (isempty()) {
+        cout << "Stack is empty." << endl;
+        return;
+    }
+    cout << "Stack contents (Top to Bottom):" << endl;
+    CNode* current = top;
+    while (current != NULL) {
+        current->display();
+        current = current->next;
+    }
+}
+
+int CLStack::isempty() {
+    return top == NULL;
+}
+
+int CLStack::size() {
+    int count = 0;
+    CNode* current = top;
+    while (current != NULL) {
+        count++;
+        current = current->next;
+    }
+    return count;
+}
+
+[24bcs170@mepcolinux ex3b]$cat app.cpp
+#include "head.h"
+
+int main() {
+    CLStack stack;
+    int choice;
+    string title, name;
+    int price,age;
+
+    while (true) {
+        cout << "\n--- Stack Menu ---\n";
+        cout << "1. Push\n";
+        cout << "2. Pop\n";
+        cout << "3. Peek\n";
+        cout << "4. Display Stack\n";
+        cout << "5. Make Stack Empty\n";
+        cout << "6. Size of Stack\n";
+        cout << "7. Check if stack is empty\n";
+        cout << "8. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: {
+                cout << "Enter title: ";
+                cin >> title;
+                cout << "Enter name: ";
+                cin >> name;
+                cout << "Enter age ";
+                cin >> age;
+                cout << "Enter price: ";
+                cin >> price;
+                CMovie* newMovie = new CMovie(title, name, age, price);
+                int result = stack.push(newMovie);
+                if (result == -1) {
+                    cout << "Error: Could not push Movie ticket (stack full).\n";
+                    delete newMovie;
+                } else {
+                    cout << "Movieticket pushed successfully.\n";
+                }
+                break;
+            }
+            case 2: {
+                int result = stack.pop();
+                if (result == -1) {
+                    cout << "Error: Stack is empty. Cannot pop.\n";
+                } else {
+                    cout << "Top ticket popped successfully.\n";
+                }
+                break;
+            }
+            case 3: {
+                int result = stack.peek();
+                if (result == -1) {
+                    cout << "Error: Stack is empty. Nothing to peek.\n";
+                }
+                break;
+            }
+            case 4:
+                stack.display();
+                break;
+            case 5: {
+                if (stack.isempty()) {
+                    cout << "Stack is already empty.\n";
+                } else {
+                    stack.makelistempty();
+                    cout << "Stack cleared successfully.\n";
+                }
+                break;
+            }
+            case 6:
+                cout << "Current stack size: " << stack.size() << endl;
+                break;
+            case 7:
+                cout << (stack.isempty() ? "Stack is empty.\n" : "Stack is not empty.\n");
+                break;
+            case 8:
+                cout << "Exiting program.\n";
+                return 0;
+            default:
+                cout << "Invalid choice. Try again.\n";
+        }
+    }
+
+    return 0;
+}
+[24bcs170@mepcolinux ex3b]$cat makefille
+exe: imp.o app.o
+	c++ imp.o app.o -o exe
+imp.o: imp.cpp head.h
+	c++ imp.cpp -c
+app.o: app.cpp head.h
+[24bcs170@mepcolinux ex3b]$./exe
+
+--- Stack Menu ---
+1. Push
+2. Pop
+3. Peek
+4. Display Stack
+5. Make Stack Empty
+6. Size of Stack
+7. Check if stack is empty
+8. Exit
+Enter your choice: 1
+Enter title: coolie
+Enter name: harish
+Enter age 19
+Enter price: 200
+Movieticket pushed successfully.
+
+--- Stack Menu ---
+1. Push
+2. Pop
+3. Peek
+4. Display Stack
+5. Make Stack Empty
+6. Size of Stack
+7. Check if stack is empty
+8. Exit
+Enter your choice: 1
+Enter title: beast
+Enter name: varshiv
+Enter age 19
+Enter price: 250
+Movieticket pushed successfully.
+
+--- Stack Menu ---
+1. Push
+2. Pop
+3. Peek
+4. Display Stack
+5. Make Stack Empty
+6. Size of Stack
+7. Check if stack is empty
+8. Exit
+Enter your choice: 3
+Title: beast | Name: varshiv | Age: 19 | Price: $250
+
+--- Stack Menu ---
+1. Push
+2. Pop
+3. Peek
+4. Display Stack
+5. Make Stack Empty
+6. Size of Stack
+7. Check if stack is empty
+8. Exit
+Enter your choice: 4
+Stack contents (Top to Bottom):
+Title: beast | Name: varshiv | Age: 19 | Price: $250
+Title: coolie | Name: harish | Age: 19 | Price: $200
+
+--- Stack Menu ---
+1. Push
+2. Pop
+3. Peek
+4. Display Stack
+5. Make Stack Empty
+6. Size of Stack
+7. Check if stack is empty
+8. Exit
+Enter your choice: 6
+Current stack size: 2
+
+--- Stack Menu ---
+1. Push
+2. Pop
+3. Peek
+4. Display Stack
+5. Make Stack Empty
+6. Size of Stack
+7. Check if stack is empty
+8. Exit
+Enter your choice: 7
+Stack is not empty.
+
+--- Stack Menu ---
+1. Push
+2. Pop
+3. Peek
+4. Display Stack
+5. Make Stack Empty
+6. Size of Stack
+7. Check if stack is empty
+8. Exit
+Enter your choice: 2
+Top ticket popped successfully.
+
+--- Stack Menu ---
+1. Push
+2. Pop
+3. Peek
+4. Display Stack
+5. Make Stack Empty
+6. Size of Stack
+7. Check if stack is empty
+8. Exit
+Enter your choice: 6
+Current stack size: 1
+
+--- Stack Menu ---
+1. Push
+2. Pop
+3. Peek
+4. Display Stack
+5. Make Stack Empty
+6. Size of Stack
+7. Check if stack is empty
+8. Exit
+Enter your choice: 5
+Stack cleared successfully.
+
+--- Stack Menu ---
+1. Push
+2. Pop
+3. Peek
+4. Display Stack
+5. Make Stack Empty
+6. Size of Stack
+7. Check if stack is empty
+8. Exit
+Enter your choice: 7
+Stack is empty.
+
+--- Stack Menu ---
+1. Push
+2. Pop
+3. Peek
+4. Display Stack
+5. Make Stack Empty
+6. Size of Stack
+7. Check if stack is empty
+8. Exit
+Enter your choice: 8
+Exiting program.
+[24bcs170@mepcolinux ex3b]$exit
+exit
